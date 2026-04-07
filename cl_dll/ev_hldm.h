@@ -31,7 +31,11 @@ void EV_EgonStop(event_args_t* args);
 void EV_HornetGunFire(event_args_t* args);
 void EV_TripmineFire(event_args_t* args);
 void EV_SnarkFire(event_args_t* args);
-
-
+void EV_Knife(event_args_s* args);
+void EV_KnifeStab(event_args_s* args);
+void EV_FireEagle(event_args_s* args);
+void EV_FireM249(event_args_s* args);
+void EV_FireSniper(event_args_s* args);
+void EV_PenguinFire(event_args_s* args);
 
 void EV_TrainPitchAdjust(event_args_t* args);

@@ -305,7 +305,6 @@ void CHeadCrab::Precache()
 	PRECACHE_MODEL("models/headcrab.mdl");
 }
 
-
 //=========================================================
 // RunTask
 //=========================================================
@@ -482,7 +481,9 @@ public:
 	void Spawn() override;
 	void Precache() override;
 	void SetYawSpeed() override;
-	float GetDamageAmount() override { return gSkillData.headcrabDmgBite * 0.3; }
+	int Classify() override;
+	void Killed(entvars_t* pevAttacker, int iGib) override;
+	float GetDamageAmount() override { return gSkillData.headcrabDmgBite * 0.1; }
 	bool CheckRangeAttack1(float flDot, float flDist) override;
 	Schedule_t* GetScheduleOfType(int Type) override;
 	int GetVoicePitch() override { return PITCH_NORM + RANDOM_LONG(40, 50); }
@@ -495,7 +496,7 @@ void CBabyCrab::Spawn()
 	CHeadCrab::Spawn();
 	SET_MODEL(ENT(pev), "models/baby_headcrab.mdl");
 	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 192;
+	pev->renderamt = 255;
 	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
 
 	pev->health = gSkillData.headcrabHealth * 0.25; // less health than full grown
@@ -513,6 +514,11 @@ void CBabyCrab::SetYawSpeed()
 	pev->yaw_speed = 120;
 }
 
+int CBabyCrab::Classify()
+{
+	// override class from headcrabs as gonarch babies.
+	return CLASS_GONARCH;
+}
 
 bool CBabyCrab::CheckRangeAttack1(float flDot, float flDist)
 {
@@ -529,6 +535,11 @@ bool CBabyCrab::CheckRangeAttack1(float flDot, float flDist)
 	return false;
 }
 
+void CBabyCrab::Killed(entvars_t* pevAttacker, int iGib)
+{
+	pev->solid = SOLID_NOT;
+	CBaseMonster::Killed(pevAttacker, GIB_NEVER);
+}
 
 Schedule_t* CBabyCrab::GetScheduleOfType(int Type)
 {

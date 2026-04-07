@@ -46,3 +46,4 @@ inline cvar_t* g_psv_gravity;
 inline cvar_t* g_psv_aim;
 inline cvar_t* g_footsteps;
 inline cvar_t* g_psv_cheats;
+inline cvar_t* g_psv_fallmode;

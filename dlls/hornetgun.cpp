@@ -23,6 +23,8 @@
 #include "gamerules.h"
 #include "UserMessages.h"
 
+#if 0
+
 enum firemode_e
 {
 	FIREMODE_TRACK = 0,
@@ -286,3 +288,5 @@ void CHgun::WeaponIdle()
 	}
 	SendWeaponAnim(iAnim);
 }
+
+#endif

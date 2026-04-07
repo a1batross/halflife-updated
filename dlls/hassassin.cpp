@@ -22,7 +22,6 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
-#include "squadmonster.h"
 #include "weapons.h"
 #include "soundent.h"
 #include "game.h"
@@ -54,7 +53,7 @@ enum
 #define ASSASSIN_AE_SHOOT1 1
 #define ASSASSIN_AE_TOSS1 2
 #define ASSASSIN_AE_JUMP 3
-
+#define ASSASSIN_AE_KICK 4
 
 #define bits_MEMORY_BADJUMP (bits_MEMORY_CUSTOM1)
 
@@ -68,10 +67,12 @@ public:
 	int ISoundMask() override;
 	void Shoot();
 	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+
+	CBaseEntity* Kick();
 	Schedule_t* GetSchedule() override;
 	Schedule_t* GetScheduleOfType(int Type) override;
 	bool CheckMeleeAttack1(float flDot, float flDist) override; // jump
-	// bool CheckMeleeAttack2 ( float flDot, float flDist ) override;
+	bool CheckMeleeAttack2 ( float flDot, float flDist ) override;
 	bool CheckRangeAttack1(float flDot, float flDist) override; // shoot
 	bool CheckRangeAttack2(float flDot, float flDist) override; // throw grenade
 	void StartTask(Task_t* pTask) override;
@@ -156,7 +157,27 @@ int CHAssassin::ISoundMask()
 //=========================================================
 int CHAssassin::Classify()
 {
-	return CLASS_HUMAN_MILITARY;
+	return CLASS_HUMAN_ASSASSIN;
+}
+
+CBaseEntity* CHAssassin::Kick()
+{
+	TraceResult tr;
+
+	UTIL_MakeVectors(pev->angles);
+	Vector vecStart = pev->origin;
+	vecStart.z += pev->size.z * 0.5;
+	Vector vecEnd = vecStart + (gpGlobals->v_forward * 70);
+
+	UTIL_TraceHull(vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr);
+
+	if (tr.pHit)
+	{
+		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+		return pEntity;
+	}
+
+	return NULL;
 }
 
 //=========================================================
@@ -250,7 +271,7 @@ void CHAssassin::HandleAnimEvent(MonsterEvent_t* pEvent)
 		UTIL_MakeVectors(pev->angles);
 		CGrenade::ShootTimed(pev, pev->origin + gpGlobals->v_forward * 34 + Vector(0, 0, 32), m_vecTossVelocity, 2.0);
 
-		m_flNextGrenadeCheck = gpGlobals->time + 6; // wait six seconds before even looking again to see if a grenade can be thrown.
+		m_flNextGrenadeCheck = gpGlobals->time + 20; // wait six seconds before even looking again to see if a grenade can be thrown.
 		m_fThrowGrenade = false;
 		// !!!LATER - when in a group, only try to throw grenade if ordered.
 	}
@@ -262,9 +283,23 @@ void CHAssassin::HandleAnimEvent(MonsterEvent_t* pEvent)
 		pev->movetype = MOVETYPE_TOSS;
 		pev->flags &= ~FL_ONGROUND;
 		pev->velocity = m_vecJumpVelocity;
-		m_flNextJump = gpGlobals->time + 3.0;
+		m_flNextJump = gpGlobals->time + 10.0;
 	}
-		return;
+		//return;
+	case ASSASSIN_AE_KICK:
+	{
+		CBaseEntity* pHurt = Kick();
+
+		if (pHurt)
+		{
+			// SOUND HERE!
+			UTIL_MakeVectors(pev->angles);
+			pHurt->pev->punchangle.x = 15;
+			pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
+			pHurt->TakeDamage(pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB);
+		}
+	}
+	break;
 	default:
 		CBaseMonster::HandleAnimEvent(pEvent);
 		break;
@@ -311,6 +346,8 @@ void CHAssassin::Precache()
 	PRECACHE_SOUND("weapons/pl_gun2.wav");
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
+
+	PRECACHE_SOUND("zombie/claw_miss2.wav"); // because we use the basemonster SWIPE animation event
 
 	m_iShell = PRECACHE_MODEL("models/shell.mdl"); // brass shell
 }
@@ -554,7 +591,6 @@ Schedule_t slAssassinJumpAttack[] =
 			"AssassinJumpAttack"},
 };
 
-
 //=========================================================
 // repel
 //=========================================================
@@ -603,7 +639,7 @@ IMPLEMENT_CUSTOM_SCHEDULES(CHAssassin, CBaseMonster);
 //=========================================================
 bool CHAssassin::CheckMeleeAttack1(float flDot, float flDist)
 {
-	if (m_flNextJump < gpGlobals->time && (flDist <= 128 || HasMemory(bits_MEMORY_BADJUMP)) && m_hEnemy != NULL)
+	if (m_flNextJump < gpGlobals->time && (flDist <= 64 || HasMemory(bits_MEMORY_BADJUMP)) && m_hEnemy != NULL)
 	{
 		TraceResult tr;
 
@@ -622,6 +658,17 @@ bool CHAssassin::CheckMeleeAttack1(float flDot, float flDist)
 		float speed = flGravity * time / 160;
 		m_vecJumpVelocity = (vecDest - pev->origin) * speed;
 
+		return true;
+	}
+	return false;
+}
+//=========================================================
+// CheckMeleeAttack1
+//=========================================================
+bool CHAssassin::CheckMeleeAttack2(float flDot, float flDist)
+{
+	if (flDist <= 64 && flDot >= 0.7)
+	{
 		return true;
 	}
 	return false;
@@ -716,7 +763,7 @@ void CHAssassin::RunAI()
 			pev->rendermode = kRenderNormal;
 	}
 
-	if (m_Activity == ACT_RUN || m_Activity == ACT_WALK)
+	if (m_Activity == ACT_RUN)
 	{
 		static bool iStep = false;
 		iStep = !iStep;
@@ -725,16 +772,16 @@ void CHAssassin::RunAI()
 			switch (RANDOM_LONG(0, 3))
 			{
 			case 0:
-				EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM);
+				EMIT_SOUND(ENT(pev), CHAN_BODY, "common/npc_step1.wav", 0.5, ATTN_NORM);
 				break;
 			case 1:
-				EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM);
+				EMIT_SOUND(ENT(pev), CHAN_BODY, "common/npc_step3.wav", 0.5, ATTN_NORM);
 				break;
 			case 2:
-				EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM);
+				EMIT_SOUND(ENT(pev), CHAN_BODY, "common/npc_step2.wav", 0.5, ATTN_NORM);
 				break;
 			case 3:
-				EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM);
+				EMIT_SOUND(ENT(pev), CHAN_BODY, "common/npc_step4.wav", 0.5, ATTN_NORM);
 				break;
 			}
 		}
@@ -898,6 +945,11 @@ Schedule_t* CHAssassin::GetSchedule()
 		{
 			// ALERT( at_console, "melee attack 1\n");
 			return GetScheduleOfType(SCHED_MELEE_ATTACK1);
+		}
+		// can kick
+		else if (HasConditions(bits_COND_CAN_MELEE_ATTACK2))
+		{
+			return GetScheduleOfType(SCHED_MELEE_ATTACK2);
 		}
 
 		// throw grenade

@@ -93,7 +93,6 @@ bool CMP5::Deploy()
 	return DefaultDeploy("models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5");
 }
 
-
 void CMP5::PrimaryAttack()
 {
 	// don't fire underwater

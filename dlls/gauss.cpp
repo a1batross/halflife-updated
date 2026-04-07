@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
+#if 0
 
 #include "extdll.h"
 #include "util.h"
@@ -142,6 +144,10 @@ void CGauss::PrimaryAttack()
 
 void CGauss::SecondaryAttack()
 {
+	// JoshA: Sanitize this so it's not total garbage on level transition
+	// and we end up ear blasting the player!
+	m_pPlayer->m_flStartCharge = V_min(m_pPlayer->m_flStartCharge, gpGlobals->time);
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
@@ -199,22 +205,25 @@ void CGauss::SecondaryAttack()
 	}
 	else
 	{
-		// during the charging process, eat one bit of ammo every once in a while
-		if (UTIL_WeaponTimeBase() >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000)
+		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
 		{
+			// during the charging process, eat one bit of ammo every once in a while
+			if (UTIL_WeaponTimeBase() >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000)
+			{
 #ifdef CLIENT_DLL
-			if (bIsMultiplayer())
+				if (bIsMultiplayer())
 #else
-			if (g_pGameRules->IsMultiplayer())
+				if (g_pGameRules->IsMultiplayer())
 #endif
-			{
-				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1;
-			}
-			else
-			{
-				m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
-				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
+				{
+					m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
+					m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1;
+				}
+				else
+				{
+					m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
+					m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
+				}
 			}
 		}
 
@@ -263,7 +272,7 @@ void CGauss::SecondaryAttack()
 			SendStopEvent(false);
 
 #ifndef CLIENT_DLL
-			m_pPlayer->TakeDamage(CWorld::Instance->pev, CWorld::Instance->pev, 50, DMG_SHOCK);
+			m_pPlayer->TakeDamage(CWorld::World->pev, CWorld::World->pev, 50, DMG_SHOCK);
 			UTIL_ScreenFade(m_pPlayer, Vector(255, 128, 0), 2, 0.5, 128, FFADE_IN);
 #endif
 			SendWeaponAnim(GAUSS_IDLE);
@@ -283,6 +292,10 @@ void CGauss::SecondaryAttack()
 void CGauss::StartFire()
 {
 	float flDamage;
+
+	// JoshA: Sanitize this so it's not total garbage on level transition
+	// and we end up ear blasting the player!
+	m_pPlayer->m_flStartCharge = V_min(m_pPlayer->m_flStartCharge, gpGlobals->time);
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 	Vector vecAiming = gpGlobals->v_forward;
@@ -350,7 +363,7 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 	bool fFirstBeam = true;
 	int nMaxHits = 10;
 
-	pentIgnore = ENT(m_pPlayer->pev);
+	pentIgnore = m_pPlayer->edict();
 
 #ifdef CLIENT_DLL
 	if (m_fPrimaryFire == false)
@@ -363,12 +376,12 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 	SendStopEvent(false);
 
 
-	/*ALERT( at_console, "%f %f %f\n%f %f %f\n", 
-		vecSrc.x, vecSrc.y, vecSrc.z, 
+	/*ALERT( at_console, "%f %f %f\n%f %f %f\n",
+		vecSrc.x, vecSrc.y, vecSrc.z,
 		vecDest.x, vecDest.y, vecDest.z );*/
 
 
-	//	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
+		//	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
 
 #ifndef CLIENT_DLL
 	while (flDamage > 10 && nMaxHits > 0)
@@ -397,6 +410,13 @@ void CGauss::Fire(Vector vecOrigSrc, Vector vecDir, float flDamage)
 		if (0 != pEntity->pev->takedamage)
 		{
 			ClearMultiDamage();
+
+			// if you hurt yourself clear the headshot bit
+			if (m_pPlayer->pev == pEntity->pev)
+			{
+				tr.iHitgroup = 0;
+			}
+
 			pEntity->TraceAttack(m_pPlayer->pev, flDamage, vecDir, &tr, DMG_BULLET);
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
@@ -610,3 +630,5 @@ class CGaussAmmo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS(ammo_gaussclip, CGaussAmmo);
+
+#endif

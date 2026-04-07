@@ -22,9 +22,10 @@
 
 #pragma once
 
-#define RGB_YELLOWISH 0x00FFA000 //255,160,0
+#define RGB_YELLOWISH 0x007070FF //128,128,255
 #define RGB_REDISH 0x00FF1010	 //255,160,0
 #define RGB_GREENISH 0x0000A000	 //0,160,0
+#define RGB_BLUISH 0x000040FF	 //0,64,255
 
 #include "common_types.h"
 #include "cl_dll.h"
@@ -370,6 +371,63 @@ private:
 //
 //-----------------------------------------------------
 //
+class CHudKeycard : public CHudBase
+{
+public:
+	bool Init(void);
+	bool VidInit(void);
+	void Reset(void);
+	void InitHUDData(void);
+	bool Draw(float flTime);
+	bool MsgFunc_HudKeycard(const char* pszName, int iSize, void* pbuf);
+	int GetKeycardPosition();
+	int GetScreenPosition(int small, int medium, int large);
+private:
+	Rect* m_prc1;
+	Rect* m_prc2;
+	HSPRITE m_hSprite;
+	int m_HUD_sec_card;
+};
+
+class CHudRedcard : public CHudBase
+{
+public:
+	bool Init(void);
+	bool VidInit(void);
+	void Reset(void);
+	void InitHUDData(void);
+	bool Draw(float flTime);
+	bool MsgFunc_HudRedcard(const char* pszName, int iSize, void* pbuf);
+	int GetRedcardPosition();
+	int GetScreenPosition(int small, int medium, int large);
+private:
+	Rect* m_prc1;
+	Rect* m_prc2;
+	HSPRITE m_hSprite;
+	int m_HUD_sec_card_red;
+};
+
+class CHudC4 : public CHudBase
+{
+public:
+	bool Init(void);
+	bool VidInit(void);
+	void Reset(void);
+	void InitHUDData(void);
+	bool Draw(float flTime);
+	bool MsgFunc_HudC4(const char* pszName, int iSize, void* pbuf);
+	int GetC4Position();
+	int GetScreenPosition(int small, int medium, int large);
+private:
+	Rect* m_prc1;
+	Rect* m_prc2;
+	HSPRITE m_hSprite;
+	int m_HUD_c4;
+};
+
+//
+//-----------------------------------------------------
+//
 const int maxHUDMessages = 16;
 struct message_parms_t
 {
@@ -436,6 +494,8 @@ private:
 
 	int m_HUD_title_life;
 	int m_HUD_title_half;
+	int m_HUD_title_ins1;
+	int m_HUD_title_ins2;
 };
 
 //
@@ -523,10 +583,31 @@ public:
 		return (m_iWeaponBits & (1ULL << id)) != 0;
 	}
 
+	// Suit
 	bool HasSuit() const
 	{
 		return HasWeapon(WEAPON_SUIT);
 	}
+	// Flashlight
+	bool HasFlashlight() const
+	{
+		return HasWeapon(WEAPON_FLASHLIGHT);
+	}	
+	// Keycard
+	bool HasKeycard() const
+	{
+		return HasWeapon(WEAPON_KEYCARD);
+	}	
+	// Redcard
+	bool HasRedcard() const
+	{
+		return HasWeapon(WEAPON_REDCARD);
+	}	
+	// C4
+	bool HasC4() const
+	{
+		return HasWeapon(WEAPON_C4);
+	}	
 
 	bool HasAnyWeapons() const
 	{
@@ -563,6 +644,9 @@ public:
 	CHudBattery m_Battery;
 	CHudTrain m_Train;
 	CHudFlashlight m_Flash;
+	CHudKeycard	m_Keycard;
+	CHudRedcard	m_Redcard;
+	CHudC4	m_C4;
 	CHudMessage m_Message;
 	CHudStatusBar m_StatusBar;
 	CHudDeathNotice m_DeathNotice;

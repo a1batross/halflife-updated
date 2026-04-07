@@ -234,7 +234,7 @@ public:
 	bool Restore(CRestore& restore) override;
 	void RenewItems();
 	void PackDeadPlayerItems();
-	void RemoveAllItems(bool removeSuit);
+	void RemoveAllItems(bool removeFlash);
 	bool SwitchWeapon(CBasePlayerItem* pWeapon);
 
 	/**
@@ -245,8 +245,25 @@ public:
 	void SetWeaponBit(int id);
 	void ClearWeaponBit(int id);
 
+	// Suit
 	bool HasSuit() const;
-	void SetHasSuit(bool hasSuit);
+	void SetSuit(bool hasSuit);
+
+	// Flashlight
+	bool HasFlashlight() const;
+	void SetFlashlight(bool hasFlash);
+
+	// Keycard
+	bool HasKeycard() const;
+	void ToggleKeycard(bool hasKey);
+
+	// Red Keycard
+	bool HasRedKeycard() const;
+	void ToggleRedKeycard(bool hasKey2);
+	
+	// C4
+	bool HasC4() const;
+	void ToggleC4(bool hasC4);
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData();
@@ -367,12 +384,13 @@ inline void CBasePlayer::ClearWeaponBit(int id)
 	m_WeaponBits &= ~(1ULL << id);
 }
 
+// Suit
 inline bool CBasePlayer::HasSuit() const
 {
 	return (m_WeaponBits & (1ULL << WEAPON_SUIT)) != 0;
 }
 
-inline void CBasePlayer::SetHasSuit(bool hasSuit)
+inline void CBasePlayer::SetSuit(bool hasSuit)
 {
 	if (hasSuit)
 	{
@@ -384,6 +402,78 @@ inline void CBasePlayer::SetHasSuit(bool hasSuit)
 	}
 }
 
+// Flashlight
+inline bool CBasePlayer::HasFlashlight() const
+{
+	return (m_WeaponBits & (1ULL << WEAPON_FLASHLIGHT)) != 0;
+}
+
+inline void CBasePlayer::SetFlashlight(bool hasFlash)
+{
+	if (hasFlash)
+	{
+		SetWeaponBit(WEAPON_FLASHLIGHT);
+	}
+	else
+	{
+		ClearWeaponBit(WEAPON_FLASHLIGHT);
+	}
+}
+
+// Keycard
+inline bool CBasePlayer::HasKeycard() const
+{
+	return (m_WeaponBits & (1ULL << WEAPON_KEYCARD)) != 0;
+}
+
+inline void CBasePlayer::ToggleKeycard(bool hasKey)
+{
+	if (hasKey)
+	{
+		SetWeaponBit(WEAPON_KEYCARD);
+	}
+	else
+	{
+		ClearWeaponBit(WEAPON_KEYCARD);
+	}
+}
+
+// Red Keycard
+inline bool CBasePlayer::HasRedKeycard() const
+{
+	return (m_WeaponBits & (1ULL << WEAPON_REDCARD)) != 0;
+}
+
+inline void CBasePlayer::ToggleRedKeycard(bool hasKey2)
+{
+	if (hasKey2)
+	{
+		SetWeaponBit(WEAPON_REDCARD);
+	}
+	else
+	{
+		ClearWeaponBit(WEAPON_REDCARD);
+	}
+}
+
+// C4
+inline bool CBasePlayer::HasC4() const
+{
+	return (m_WeaponBits & (1ULL << WEAPON_C4)) != 0;
+}
+
+inline void CBasePlayer::ToggleC4(bool hasKey)
+{
+	if (hasKey)
+	{
+		SetWeaponBit(WEAPON_C4);
+	}
+	else
+	{
+		ClearWeaponBit(WEAPON_C4);
+	}
+}
+
 #define AUTOAIM_2DEGREES 0.0348994967025
 #define AUTOAIM_5DEGREES 0.08715574274766
 #define AUTOAIM_8DEGREES 0.1391731009601
@@ -391,7 +481,8 @@ inline void CBasePlayer::SetHasSuit(bool hasSuit)
 
 inline bool gInitHUD = true;
 inline bool gEvilImpulse101 = false;
-inline bool giPrecacheGrunt = false;
+inline bool giPrecacheSci = false;
+inline bool giPrecacheBa = false;
 
 /**
 *	@brief Display the game title if this key is set

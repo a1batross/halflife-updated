@@ -218,3 +218,23 @@ public:
 	int m_iszSpriteName;
 	Vector m_firePosition;
 };
+
+class CXenLaser : public CLaser
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	bool KeyValue(KeyValueData* pkvd) override;
+
+	void FireAtPoint(TraceResult& point);
+	void XenBeamDamage(TraceResult* ptr);
+	void EXPORT StrikeThink();
+
+	bool Save(CSave& save) override;
+	bool Restore(CRestore& restore) override;
+	static TYPEDESCRIPTION m_SaveData[];
+
+	CSprite* m_pSprite;
+	int m_iszSpriteName;
+	Vector m_firePosition;
+};

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -45,7 +45,6 @@ public:
 	void SetYawSpeed() override;
 	int ISoundMask() override;
 	int Classify() override;
-	int IRelationship(CBaseEntity* pTarget) override;
 	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
 	bool CheckRangeAttack1(float flDot, float flDist) override;
 	bool CheckRangeAttack2(float flDot, float flDist) override;
@@ -91,21 +90,21 @@ public:
 	static const char* pPainSounds[];
 	static const char* pDeathSounds[];
 };
+
 LINK_ENTITY_TO_CLASS(monster_alien_slave, CISlave);
-LINK_ENTITY_TO_CLASS(monster_vortigaunt, CISlave);
 
 
 TYPEDESCRIPTION CISlave::m_SaveData[] =
-	{
-		DEFINE_FIELD(CISlave, m_iBravery, FIELD_INTEGER),
+{
+	DEFINE_FIELD(CISlave, m_iBravery, FIELD_INTEGER),
 
-		DEFINE_ARRAY(CISlave, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS),
-		DEFINE_FIELD(CISlave, m_iBeams, FIELD_INTEGER),
-		DEFINE_FIELD(CISlave, m_flNextAttack, FIELD_TIME),
+	DEFINE_ARRAY(CISlave, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS),
+	DEFINE_FIELD(CISlave, m_iBeams, FIELD_INTEGER),
+	DEFINE_FIELD(CISlave, m_flNextAttack, FIELD_TIME),
 
-		DEFINE_FIELD(CISlave, m_voicePitch, FIELD_INTEGER),
+	DEFINE_FIELD(CISlave, m_voicePitch, FIELD_INTEGER),
 
-		DEFINE_FIELD(CISlave, m_hDead, FIELD_EHANDLE),
+	DEFINE_FIELD(CISlave, m_hDead, FIELD_EHANDLE),
 
 };
 
@@ -115,28 +114,28 @@ IMPLEMENT_SAVERESTORE(CISlave, CSquadMonster);
 
 
 const char* CISlave::pAttackHitSounds[] =
-	{
-		"zombie/claw_strike1.wav",
-		"zombie/claw_strike2.wav",
-		"zombie/claw_strike3.wav",
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
 };
 
 const char* CISlave::pAttackMissSounds[] =
-	{
-		"zombie/claw_miss1.wav",
-		"zombie/claw_miss2.wav",
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
 };
 
 const char* CISlave::pPainSounds[] =
-	{
-		"aslave/slv_pain1.wav",
-		"aslave/slv_pain2.wav",
+{
+	"aslave/slv_pain1.wav",
+	"aslave/slv_pain2.wav",
 };
 
 const char* CISlave::pDeathSounds[] =
-	{
-		"aslave/slv_die1.wav",
-		"aslave/slv_die2.wav",
+{
+	"aslave/slv_die1.wav",
+	"aslave/slv_die2.wav",
 };
 
 //=========================================================
@@ -145,18 +144,11 @@ const char* CISlave::pDeathSounds[] =
 //=========================================================
 int CISlave::Classify()
 {
-	return CLASS_ALIEN_MILITARY;
+	if ((pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED) != 0)
+		return CLASS_ALIEN_PASSIVE;
+	else
+		return CLASS_ALIEN_MILITARY;
 }
-
-
-int CISlave::IRelationship(CBaseEntity* pTarget)
-{
-	if ((pTarget->IsPlayer()))
-		if ((pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED) != 0 && (m_afMemory & bits_MEMORY_PROVOKED) == 0)
-			return R_NO;
-	return CBaseMonster::IRelationship(pTarget);
-}
-
 
 void CISlave::CallForHelp(const char* szClassname, float flDist, EHANDLE hEnemy, Vector& vecLocation)
 {
@@ -208,27 +200,27 @@ void CISlave::IdleSound()
 	}
 
 #if 0
-	int side = RANDOM_LONG( 0, 1 ) * 2 - 1;
+	int side = RANDOM_LONG(0, 1) * 2 - 1;
 
-	ClearBeams( );
-	ArmBeam( side );
+	ClearBeams();
+	ArmBeam(side);
 
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors(pev->angles);
 	Vector vecSrc = pev->origin + gpGlobals->v_right * 2 * side;
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
-		WRITE_BYTE(TE_DLIGHT);
-		WRITE_COORD(vecSrc.x);	// X
-		WRITE_COORD(vecSrc.y);	// Y
-		WRITE_COORD(vecSrc.z);	// Z
-		WRITE_BYTE( 8 );		// radius * 0.1
-		WRITE_BYTE( 255 );		// r
-		WRITE_BYTE( 180 );		// g
-		WRITE_BYTE( 96 );		// b
-		WRITE_BYTE( 10 );		// time * 10
-		WRITE_BYTE( 0 );		// decay * 0.1
-	MESSAGE_END( );
+	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSrc);
+	WRITE_BYTE(TE_DLIGHT);
+	WRITE_COORD(vecSrc.x);	// X
+	WRITE_COORD(vecSrc.y);	// Y
+	WRITE_COORD(vecSrc.z);	// Z
+	WRITE_BYTE(8);		// radius * 0.1
+	WRITE_BYTE(255);		// r
+	WRITE_BYTE(180);		// g
+	WRITE_BYTE(96);		// b
+	WRITE_BYTE(10);		// time * 10
+	WRITE_BYTE(0);		// decay * 0.1
+	MESSAGE_END();
 
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "debris/zap1.wav", 1, ATTN_NORM, 0, 100 );
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "debris/zap1.wav", 1, ATTN_NORM, 0, 100);
 #endif
 }
 
@@ -260,9 +252,9 @@ void CISlave::DeathSound()
 int CISlave::ISoundMask()
 {
 	return bits_SOUND_WORLD |
-		   bits_SOUND_COMBAT |
-		   bits_SOUND_DANGER |
-		   bits_SOUND_PLAYER;
+		bits_SOUND_COMBAT |
+		bits_SOUND_DANGER |
+		bits_SOUND_PLAYER;
 }
 
 
@@ -388,7 +380,7 @@ void CISlave::HandleAnimEvent(MonsterEvent_t* pEvent)
 		}
 
 		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10);
-		pev->skin = m_iBeams / 2;
+		//pev->skin = m_iBeams / 2;
 	}
 	break;
 
@@ -536,6 +528,11 @@ void CISlave::Spawn()
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
 
+	if ((pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED) != 0)
+		pev->skin = 1;
+	else
+		pev->skin = 0;
+
 	m_voicePitch = RANDOM_LONG(85, 110);
 
 	MonsterInit();
@@ -597,26 +594,26 @@ void CISlave::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir,
 
 // primary range attack
 Task_t tlSlaveAttack1[] =
-	{
-		{TASK_STOP_MOVING, 0},
-		{TASK_FACE_IDEAL, (float)0},
-		{TASK_RANGE_ATTACK1, (float)0},
+{
+	{TASK_STOP_MOVING, 0},
+	{TASK_FACE_IDEAL, (float)0},
+	{TASK_RANGE_ATTACK1, (float)0},
 };
 
 Schedule_t slSlaveAttack1[] =
-	{
-		{tlSlaveAttack1,
-			ARRAYSIZE(tlSlaveAttack1),
-			bits_COND_CAN_MELEE_ATTACK1 |
-				bits_COND_HEAR_SOUND |
-				bits_COND_HEAVY_DAMAGE,
+{
+	{tlSlaveAttack1,
+		ARRAYSIZE(tlSlaveAttack1),
+		bits_COND_CAN_MELEE_ATTACK1 |
+			bits_COND_HEAR_SOUND |
+			bits_COND_HEAVY_DAMAGE,
 
-			bits_SOUND_DANGER,
-			"Slave Range Attack1"},
+		bits_SOUND_DANGER,
+		"Slave Range Attack1"},
 };
 
 
-DEFINE_CUSTOM_SCHEDULES(CISlave){
+DEFINE_CUSTOM_SCHEDULES(CISlave) {
 	slSlaveAttack1,
 };
 
@@ -744,6 +741,7 @@ void CISlave::ArmBeam(int side)
 	m_pBeam[m_iBeams]->SetColor(96, 128, 16);
 	m_pBeam[m_iBeams]->SetBrightness(64);
 	m_pBeam[m_iBeams]->SetNoise(80);
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 }
 
@@ -790,6 +788,7 @@ void CISlave::WackBeam(int side, CBaseEntity* pEntity)
 	m_pBeam[m_iBeams]->SetColor(180, 255, 96);
 	m_pBeam[m_iBeams]->SetBrightness(255);
 	m_pBeam[m_iBeams]->SetNoise(80);
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 }
 
@@ -820,6 +819,7 @@ void CISlave::ZapBeam(int side)
 	m_pBeam[m_iBeams]->SetColor(180, 255, 96);
 	m_pBeam[m_iBeams]->SetBrightness(255);
 	m_pBeam[m_iBeams]->SetNoise(20);
+	m_pBeam[m_iBeams]->pev->spawnflags |= SF_BEAM_TEMPORARY; // Flag these to be destroyed on save/restore or level transition
 	m_iBeams++;
 
 	pEntity = CBaseEntity::Instance(tr.pHit);
@@ -845,7 +845,7 @@ void CISlave::ClearBeams()
 		}
 	}
 	m_iBeams = 0;
-	pev->skin = 0;
+	//pev->skin = 0;
 
 	STOP_SOUND(ENT(pev), CHAN_WEAPON, "debris/zap4.wav");
 }

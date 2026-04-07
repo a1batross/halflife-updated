@@ -86,6 +86,11 @@ public:
 #define SATCHEL_WEIGHT -10
 #define TRIPMINE_WEIGHT -10
 
+#define KNIFE_WEIGHT 15
+#define EAGLE_WEIGHT 15
+#define M249_WEIGHT 20
+#define SNIPER_WEIGHT 20
+#define PENGUIN_WEIGHT 5
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY 100
@@ -98,8 +103,12 @@ public:
 #define SATCHEL_MAX_CARRY 5
 #define TRIPMINE_MAX_CARRY 5
 #define SNARK_MAX_CARRY 15
-#define HORNET_MAX_CARRY 8
+#define HORNET_MAX_CARRY 10
 #define M203_GRENADE_MAX_CARRY 10
+
+#define _556_MAX_CARRY 200
+#define _762_MAX_CARRY 15
+#define PENGUIN_MAX_CARRY 10
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP -1
@@ -120,6 +129,10 @@ public:
 #define TRIPMINE_MAX_CLIP WEAPON_NOCLIP
 #define SNARK_MAX_CLIP WEAPON_NOCLIP
 
+#define EAGLE_MAX_CLIP 7
+#define M249_MAX_CLIP 50
+#define SNIPER_MAX_CLIP 5
+#define PENGUIN_MAX_CLIP WEAPON_NOCLIP
 
 // the default amount of ammo that comes with each gun when it spawns
 #define GLOCK_DEFAULT_GIVE 17
@@ -132,11 +145,16 @@ public:
 #define RPG_DEFAULT_GIVE 1
 #define GAUSS_DEFAULT_GIVE 20
 #define EGON_DEFAULT_GIVE 20
-#define HANDGRENADE_DEFAULT_GIVE 5
+#define HANDGRENADE_DEFAULT_GIVE 1
 #define SATCHEL_DEFAULT_GIVE 1
 #define TRIPMINE_DEFAULT_GIVE 1
 #define SNARK_DEFAULT_GIVE 5
-#define HIVEHAND_DEFAULT_GIVE 8
+#define HIVEHAND_DEFAULT_GIVE 10
+
+#define EAGLE_DEFAULT_GIVE 7
+#define M249_DEFAULT_GIVE 20
+#define SNIPER_DEFAULT_GIVE 5
+#define PENGUIN_DEFAULT_GIVE 10
 
 // The amount of ammo given to a player by an ammo item.
 #define AMMO_URANIUMBOX_GIVE 20
@@ -151,6 +169,10 @@ public:
 #define AMMO_URANIUMBOX_GIVE 20
 #define AMMO_SNARKBOX_GIVE 5
 
+#define AMMO_556BOX_GIVE M249_MAX_CLIP
+#define AMMO_762CLIP_GIVE SNIPER_MAX_CLIP
+
+
 // bullet types
 typedef enum
 {
@@ -160,8 +182,13 @@ typedef enum
 	BULLET_PLAYER_357,		// python
 	BULLET_PLAYER_BUCKSHOT, // shotgun
 	BULLET_PLAYER_CROWBAR,	// crowbar swipe
+	BULLET_PLAYER_EAGLE,
+	BULLET_PLAYER_556,
+	BULLET_PLAYER_762,
 
 	BULLET_MONSTER_9MM,
+	BULLET_MONSTER_556,
+	BULLET_MONSTER_762,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM,
 } Bullet;
@@ -223,6 +250,7 @@ public:
 	void EXPORT DestroyItem();
 	void EXPORT DefaultTouch(CBaseEntity* pOther); // default weapon touch
 	void EXPORT FallThink();					   // when an item is first spawned, this think is run to determine when the object has hit the ground.
+	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void EXPORT Materialize();					   // make a weapon visible and tangible
 	void EXPORT AttemptToMaterialize();			   // the weapon desires to become visible and tangible, if the game rules allow for it
 	CBaseEntity* Respawn() override;			   // copy a weapon
@@ -287,6 +315,10 @@ public:
 
 
 // inventory items that
+#define SF_ITEMS_NOGRAVITY		0x0001
+#define SF_ITEMS_DISABLED		2
+#define SF_AMMO_RESPAWN		0x08
+
 class CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
@@ -374,6 +406,7 @@ class CBasePlayerAmmo : public CBaseEntity
 public:
 	void Spawn() override;
 	void EXPORT DefaultTouch(CBaseEntity* pOther); // default weapon touch
+	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual bool AddAmmo(CBaseEntity* pOther) { return true; }
 
 	CBaseEntity* Respawn() override;
@@ -410,6 +443,7 @@ typedef struct
 
 inline MULTIDAMAGE gMultiDamage;
 
+void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, const Vector& mins, const Vector& maxs, edict_t* pEntity);
 
 #define LOUD_GUN_VOLUME 1000
 #define NORMAL_GUN_VOLUME 600
@@ -501,6 +535,7 @@ public:
 	void SecondaryAttack() override;
 	void GlockFire(float flSpread, float flCycleTime, bool fUseAutoAim);
 	bool Deploy() override;
+	void Holster() override;
 	void Reload() override;
 	void WeaponIdle() override;
 
@@ -724,6 +759,7 @@ public:
 	void PrimaryAttack() override;
 	void SecondaryAttack() override;
 	bool Deploy() override;
+	void Holster() override;
 	void Reload() override;
 	void WeaponIdle() override;
 	void ItemPostFrame() override;
@@ -767,7 +803,6 @@ enum rpg_e
 	RPG_FIRE2,	   // to empty
 	RPG_HOLSTER1,  // loaded
 	RPG_DRAW1,	   // loaded
-	RPG_HOLSTER2,  // unloaded
 	RPG_DRAW_UL,   // unloaded
 	RPG_IDLE_UL,   // unloaded idle
 	RPG_FIDGET_UL, // unloaded fidget
@@ -836,8 +871,8 @@ public:
 	EHANDLE m_pLauncher; // handle back to the launcher that fired me.
 };
 
-#define GAUSS_PRIMARY_CHARGE_VOLUME 256 // how loud gauss is while charging
-#define GAUSS_PRIMARY_FIRE_VOLUME 450	// how loud gauss is when discharged
+#define GAUSS_PRIMARY_CHARGE_VOLUME 100 // how loud gauss is while charging
+#define GAUSS_PRIMARY_FIRE_VOLUME 200	// how loud gauss is when discharged
 
 enum gauss_e
 {
@@ -852,7 +887,7 @@ enum gauss_e
 	GAUSS_DRAW
 };
 
-class CGauss : public CBasePlayerWeapon
+class CGaussMK2 : public CBasePlayerWeapon
 {
 public:
 #ifndef CLIENT_DLL
@@ -870,7 +905,7 @@ public:
 	void Holster() override;
 
 	void PrimaryAttack() override;
-	void SecondaryAttack() override;
+	void SecondaryAttack() { return; }
 	void WeaponIdle() override;
 
 	void StartFire();
@@ -1009,7 +1044,7 @@ enum hgun_e
 	HGUN_SHOOT
 };
 
-class CHgun : public CBasePlayerWeapon
+class CHgunPoison : public CBasePlayerWeapon
 {
 public:
 	void Spawn() override;
@@ -1213,4 +1248,265 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
+};
+
+//======================
+//	    OPFOR WEAPONS
+//======================
+
+enum knife_e {
+	KNIFE_IDLE1 = 0,
+	KNIFE_DRAW,
+	KNIFE_HOLSTER,
+	KNIFE_ATTACK1HIT,
+	KNIFE_ATTACK1MISS,
+	KNIFE_ATTACK2MISS,
+	KNIFE_ATTACK2HIT,
+	KNIFE_ATTACK3MISS,
+	KNIFE_ATTACK3HIT,
+	KNIFE_IDLE2,
+	KNIFE_IDLE3,
+	KNIFE_ATTACKCHARGE,
+	KNIFE_ATTACKCHARGELOOP,
+	KNIFE_ATTACKSTAB
+};
+
+class CKnife : public CBasePlayerWeapon
+{
+public:
+#ifndef CLIENT_DLL
+	bool	Save(CSave& save);
+	bool	Restore(CRestore& restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
+
+	void Spawn() override;
+	void Precache() override;
+	int iItemSlot() { return 1; }
+	void EXPORT SwingAgain();
+	void EXPORT Smack();
+	bool GetItemInfo(ItemInfo* p) override;
+
+	void PrimaryAttack() override;
+	void SecondaryAttack() override;
+	void WeaponIdle() override;
+	int Swing(int fFirst);
+	bool Deploy() override;
+	void Holster() override;
+	int m_iSwing;
+	TraceResult m_trHit;
+
+	void StartStab();
+	int Stab(float flDamage);
+	float GetFullStabTime(void);
+
+	virtual bool UseDecrement(void) override
+	{
+#if defined( CLIENT_WEAPONS )
+		return true;
+#else
+		return false;
+#endif
+	}
+private:
+	unsigned short m_usKnife;
+	unsigned short m_usKnifeStab;
+};
+
+class CEagleLaser : public CBaseEntity
+{
+	void Spawn() override;
+	void Precache() override;
+
+	int ObjectCaps() override { return FCAP_DONT_SAVE; }
+
+public:
+	void Suspend(float flSuspendTime);
+	void EXPORT Revive();
+
+	static CEagleLaser* CreateSpot();
+};
+
+enum eagle_e
+{
+	EAGLE_IDLE1 = 0,
+	EAGLE_IDLE2,
+	EAGLE_IDLE3,
+	EAGLE_IDLE4,
+	EAGLE_IDLE5,
+	EAGLE_SHOOT,
+	EAGLE_SHOOT_EMPTY,
+	EAGLE_RELOAD,
+	EAGLE_RELOAD_NOT_EMPTY,
+	EAGLE_DRAW,
+	EAGLE_HOLSTER
+};
+
+class CEagle : public CBasePlayerWeapon
+{
+public:
+#ifndef CLIENT_DLL
+	bool	Save(CSave& save);
+	bool	Restore(CRestore& restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+#endif
+
+	void Spawn() override;
+	void Precache() override;
+	int iItemSlot() override { return 2; }
+	bool GetItemInfo(ItemInfo* p) override;
+
+	void PrimaryAttack() override;
+	void SecondaryAttack() override;
+	bool Deploy() override;
+	void Holster() override;
+	void Reload() override;
+	void WeaponIdle() override;
+	void UpdateSpot();
+
+	CEagleLaser* m_pSpot;
+	bool m_fSpotActive;
+
+	bool UseDecrement() override
+	{
+#if defined(CLIENT_WEAPONS)
+		return true;
+#else
+		return false;
+#endif
+	}
+
+private:
+	int m_iShell;
+
+	unsigned short m_usFireEagle;
+};
+
+
+enum m249_e
+{
+	M249_SLOWIDLE = 0,
+	M249_IDLE2,
+	M249_RELOAD,
+	M249_RELOAD2,
+	M249_HOLSTER,
+	M249_DRAW,
+	M249_FIRE1,
+	M249_FIRE2,
+	M249_FIRE3,
+};
+
+class CM249 : public CBasePlayerWeapon
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	int iItemSlot() override { return 5; }
+	bool GetItemInfo(ItemInfo* p) override;
+
+	void PrimaryAttack() override;
+	int RecalculateBody(int iClip);
+	bool Deploy() override;
+	void Holster() override;
+	void Reload() override;
+	void WeaponIdle() override;
+
+	int m_iShell;
+	int m_iLink;
+
+	bool m_bAlternateShell;
+
+	bool UseDecrement() override
+	{
+#if defined(CLIENT_WEAPONS)
+		return true;
+#else
+		return false;
+#endif
+	}
+
+private:
+	unsigned short m_usM249;
+};
+
+enum sniper_e
+{
+	SNIPER_DRAW = 0,
+	SNIPER_SLOWIDLE,
+	SNIPER_FIRE,
+	SNIPER_FIRELASTROUND,
+	SNIPER_RELOAD,
+	SNIPER_RELOAD2,
+	SNIPER_RELOAD3,
+	SNIPER_SLOWIDLE2,
+	SNIPER_HOLSTER
+};
+
+class CSniperRifle : public CBasePlayerWeapon
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	int iItemSlot() override { return 2; }
+	bool GetItemInfo(ItemInfo* p) override;
+
+	void PrimaryAttack() override;
+	void SecondaryAttack() override;
+	bool Deploy() override;
+	void Holster() override;
+	void Reload() override;
+	void WeaponIdle() override;
+
+	bool UseDecrement() override
+	{
+#if defined(CLIENT_WEAPONS)
+		return true;
+#else
+		return false;
+#endif
+	}
+
+private:
+	unsigned short m_usFireSniper;
+
+	bool m_bReloading;
+	float m_flReloadStart;
+};
+
+enum penguin_e
+{
+	PENGUIN_IDLE1 = 0,
+	PENGUIN_FIDGETFIT,
+	PENGUIN_FIDGETNIP,
+	PENGUIN_DOWN,
+	PENGUIN_UP,
+	PENGUIN_THROW
+};
+
+class CPenguin : public CBasePlayerWeapon
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	int iItemSlot() override { return 5; }
+	bool GetItemInfo(ItemInfo* p) override;
+
+	void PrimaryAttack() override;
+	void SecondaryAttack() override;
+	bool Deploy() override;
+	void Holster() override;
+	void WeaponIdle() override;
+	bool m_fJustThrown;
+
+	bool UseDecrement() override
+	{
+#if defined(CLIENT_WEAPONS)
+		return true;
+#else
+		return false;
+#endif
+	}
+
+private:
+	unsigned short m_usPenguinFire;
 };

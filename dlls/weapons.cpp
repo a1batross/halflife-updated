@@ -152,10 +152,15 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType)
 		{
 		case BULLET_PLAYER_9MM:
 		case BULLET_MONSTER_9MM:
+		case BULLET_PLAYER_556:
+		case BULLET_PLAYER_762:
+		case BULLET_MONSTER_556:
+		case BULLET_MONSTER_762:
 		case BULLET_PLAYER_MP5:
 		case BULLET_MONSTER_MP5:
 		case BULLET_PLAYER_BUCKSHOT:
 		case BULLET_PLAYER_357:
+		case BULLET_PLAYER_EAGLE:
 		default:
 			// smoke and decal
 			UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET));
@@ -268,9 +273,15 @@ void W_Precache()
 	// common world objects
 	UTIL_PrecacheOther("item_suit");
 	UTIL_PrecacheOther("item_battery");
+	UTIL_PrecacheOther("item_flashlight");
+	UTIL_PrecacheOther("item_armorvest");
+	UTIL_PrecacheOther("item_armorplate");
+	UTIL_PrecacheOther("item_helmet");
 	UTIL_PrecacheOther("item_antidote");
-	UTIL_PrecacheOther("item_security");
+	UTIL_PrecacheOther("item_keycard");
+	UTIL_PrecacheOther("item_redcard");
 	UTIL_PrecacheOther("item_longjump");
+	UTIL_PrecacheOther("item_c4");
 
 	// shotgun
 	UTIL_PrecacheOtherWeapon("weapon_shotgun");
@@ -278,6 +289,9 @@ void W_Precache()
 
 	// crowbar
 	UTIL_PrecacheOtherWeapon("weapon_crowbar");
+	
+	// knife
+	UTIL_PrecacheOtherWeapon("weapon_knife");
 
 	// glock
 	UTIL_PrecacheOtherWeapon("weapon_9mmhandgun");
@@ -291,6 +305,9 @@ void W_Precache()
 	// python
 	UTIL_PrecacheOtherWeapon("weapon_357");
 	UTIL_PrecacheOther("ammo_357");
+
+	// eagle
+	UTIL_PrecacheOtherWeapon("weapon_eagle");
 
 	// gauss
 	UTIL_PrecacheOtherWeapon("weapon_gauss");
@@ -321,6 +338,17 @@ void W_Precache()
 
 	// hornetgun
 	UTIL_PrecacheOtherWeapon("weapon_hornetgun");
+
+	// m249 saw
+	UTIL_PrecacheOtherWeapon("weapon_m249");
+	UTIL_PrecacheOther("ammo_556");	
+	
+	// sniper rifle
+	UTIL_PrecacheOtherWeapon("weapon_sniperrifle");
+	UTIL_PrecacheOther("ammo_762");
+
+	// penguin grenade
+	UTIL_PrecacheOtherWeapon("weapon_penguin");
 
 	if (g_pGameRules->IsDeathmatch())
 	{
@@ -405,14 +433,30 @@ void CBasePlayerItem::SetObjectCollisionBox()
 //=========================================================
 void CBasePlayerItem::FallInit()
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_BBOX;
+	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin);
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0)); //pointsize until it lands on the ground.
 
 	SetTouch(&CBasePlayerItem::DefaultTouch);
 	SetThink(&CBasePlayerItem::FallThink);
+
+	if (!FStringNull(pev->targetname))
+	{
+		SetUse(&CBasePlayerItem::ToggleUse);
+	}
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -446,6 +490,22 @@ void CBasePlayerItem::FallThink()
 	}
 }
 
+//
+// ToggleUse - If this is the USE function for a trigger, its state will toggle every time it's fired
+//
+void CBasePlayerItem::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pev->solid == SOLID_NOT)
+	{
+		pev->solid = SOLID_TRIGGER;
+	}
+	else
+	{
+		pev->solid = SOLID_NOT;
+	}
+	UTIL_SetOrigin(pev, pev->origin);
+}
+
 //=========================================================
 // Materialize - make a CBasePlayerItem visible and tangible
 //=========================================================
@@ -454,12 +514,10 @@ void CBasePlayerItem::Materialize()
 	if ((pev->effects & EF_NODRAW) != 0)
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+		//EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
+		//pev->effects |= EF_MUZZLEFLASH;
 	}
-
-	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin); // link into world.
 	SetTouch(&CBasePlayerItem::DefaultTouch);
@@ -492,7 +550,10 @@ void CBasePlayerItem::CheckRespawn()
 	switch (g_pGameRules->WeaponShouldRespawn(this))
 	{
 	case GR_WEAPON_RESPAWN_YES:
-		Respawn();
+		if ((pev->spawnflags & SF_AMMO_RESPAWN))
+		{
+			Respawn();
+		}
 		break;
 	case GR_WEAPON_RESPAWN_NO:
 		return;
@@ -512,6 +573,7 @@ CBaseEntity* CBasePlayerItem::Respawn()
 
 	if (pNewWeapon)
 	{
+		pNewWeapon->pev->spawnflags |= SF_AMMO_RESPAWN;
 		pNewWeapon->pev->effects |= EF_NODRAW; // invisible for now
 		pNewWeapon->SetTouch(NULL);			   // no touch
 		pNewWeapon->SetThink(&CBasePlayerItem::AttemptToMaterialize);
@@ -632,7 +694,6 @@ void CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 		return false;
 	}
 	*/
-
 	CBasePlayerItem::AddToPlayer(pPlayer);
 
 	pPlayer->SetWeaponBit(m_iId);
@@ -865,16 +926,34 @@ void CBasePlayerWeapon::Holster()
 
 void CBasePlayerAmmo::Spawn()
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
+	if (pev->spawnflags & SF_ITEMS_NOGRAVITY)
+	{
+		pev->movetype = MOVETYPE_NONE;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_TOSS;
+	}
+
+	if (FBitSet(pev->spawnflags, SF_ITEMS_DISABLED)) // if flagged to Start Turned Off, make trigger nonsolid.
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_TRIGGER;
+
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin(pev, pev->origin);
+
+	if (!FStringNull(pev->targetname))
+	{
+		SetUse(&CBasePlayerItem::ToggleUse);
+	}
 
 	SetTouch(&CBasePlayerAmmo::DefaultTouch);
 }
 
 CBaseEntity* CBasePlayerAmmo::Respawn()
 {
+	pev->solid |= SOLID_NOT;
 	pev->effects |= EF_NODRAW;
 	SetTouch(NULL);
 
@@ -886,14 +965,16 @@ CBaseEntity* CBasePlayerAmmo::Respawn()
 	return this;
 }
 
+// Insecure: Since players go out of ammo for the Apache
+// helicopter fight, this should quietly respawn so they 
+// can never run out of ammo.
 void CBasePlayerAmmo::Materialize()
 {
 	if ((pev->effects & EF_NODRAW) != 0)
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+		SUB_UseTargets(this, USE_ON, 0); // this only should be used for the env_model for ammo crates.
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	SetTouch(&CBasePlayerAmmo::DefaultTouch);
@@ -908,7 +989,7 @@ void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
 
 	if (AddAmmo(pOther))
 	{
-		if (g_pGameRules->AmmoShouldRespawn(this) == GR_AMMO_RESPAWN_YES)
+		if ((pev->spawnflags & SF_AMMO_RESPAWN))
 		{
 			Respawn();
 		}
@@ -918,6 +999,7 @@ void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
 			SetThink(&CBasePlayerAmmo::SUB_Remove);
 			pev->nextthink = gpGlobals->time + .1;
 		}
+		SUB_UseTargets(this, USE_OFF, 0); // this only should be used for the env_model for ammo crates.
 	}
 	else if (gEvilImpulse101)
 	{
@@ -1406,15 +1488,15 @@ TYPEDESCRIPTION CShotgun::m_SaveData[] =
 };
 IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon);
 
-TYPEDESCRIPTION CGauss::m_SaveData[] =
+TYPEDESCRIPTION CGaussMK2::m_SaveData[] =
 	{
-		DEFINE_FIELD(CGauss, m_fInAttack, FIELD_INTEGER),
-		//	DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-		//	DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-		//	DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-		DEFINE_FIELD(CGauss, m_fPrimaryFire, FIELD_BOOLEAN),
+		DEFINE_FIELD(CGaussMK2, m_fInAttack, FIELD_INTEGER),
+		//	DEFINE_FIELD( CGaussMK2, m_flStartCharge, FIELD_TIME ),
+		//	DEFINE_FIELD( CGaussMK2, m_flPlayAftershock, FIELD_TIME ),
+		//	DEFINE_FIELD( CGaussMK2, m_flNextAmmoBurn, FIELD_TIME ),
+		DEFINE_FIELD(CGaussMK2, m_fPrimaryFire, FIELD_BOOLEAN),
 };
-IMPLEMENT_SAVERESTORE(CGauss, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CGaussMK2, CBasePlayerWeapon);
 
 TYPEDESCRIPTION CEgon::m_SaveData[] =
 	{
@@ -1434,3 +1516,15 @@ TYPEDESCRIPTION CSatchel::m_SaveData[] =
 		DEFINE_FIELD(CSatchel, m_chargeReady, FIELD_INTEGER),
 };
 IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon);
+
+TYPEDESCRIPTION	CKnife::m_SaveData[] =
+{
+	DEFINE_FIELD(CKnife, m_fInAttack, FIELD_INTEGER),
+};
+IMPLEMENT_SAVERESTORE(CKnife, CBasePlayerWeapon);
+
+TYPEDESCRIPTION CEagle::m_SaveData[] =
+{
+	DEFINE_FIELD(CEagle, m_fSpotActive, FIELD_BOOLEAN),
+};
+IMPLEMENT_SAVERESTORE(CEagle, CBasePlayerWeapon);

@@ -402,11 +402,11 @@ CGrenade* CGrenade::ShootTimed(entvars_t* pevOwner, Vector vecStart, Vector vecV
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
 
-	pGrenade->SetTouch(&CGrenade::BounceTouch); // Bounce if touched
+	pGrenade->SetTouch(&CGrenade::BounceTouch);	// Bounce if touched
 
 	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
-	// will insert a DANGER sound into the world sound list and delay detonation for one second so that
-	// the grenade explodes after the exact amount of time specified in the call to ShootTimed().
+	// will insert a DANGER sound into the world sound list and delay detonation for one second so that 
+	// the grenade explodes after the exact amount of time specified in the call to ShootTimed(). 
 
 	pGrenade->pev->dmgtime = gpGlobals->time + time;
 	pGrenade->SetThink(&CGrenade::TumbleThink);

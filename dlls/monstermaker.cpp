@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -52,7 +52,6 @@ public:
 
 	int m_cNumMonsters; // max number of monsters this ent can create
 
-
 	int m_cLiveChildren;	// how many monsters made by this monster maker that are currently alive
 	int m_iMaxLiveChildren; // max number of monsters that this maker may have out at one time.
 
@@ -65,14 +64,14 @@ public:
 LINK_ENTITY_TO_CLASS(monstermaker, CMonsterMaker);
 
 TYPEDESCRIPTION CMonsterMaker::m_SaveData[] =
-	{
-		DEFINE_FIELD(CMonsterMaker, m_iszMonsterClassname, FIELD_STRING),
-		DEFINE_FIELD(CMonsterMaker, m_cNumMonsters, FIELD_INTEGER),
-		DEFINE_FIELD(CMonsterMaker, m_cLiveChildren, FIELD_INTEGER),
-		DEFINE_FIELD(CMonsterMaker, m_flGround, FIELD_FLOAT),
-		DEFINE_FIELD(CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER),
-		DEFINE_FIELD(CMonsterMaker, m_fActive, FIELD_BOOLEAN),
-		DEFINE_FIELD(CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN),
+{
+	DEFINE_FIELD(CMonsterMaker, m_iszMonsterClassname, FIELD_STRING),
+	DEFINE_FIELD(CMonsterMaker, m_cNumMonsters, FIELD_INTEGER),
+	DEFINE_FIELD(CMonsterMaker, m_cLiveChildren, FIELD_INTEGER),
+	DEFINE_FIELD(CMonsterMaker, m_flGround, FIELD_FLOAT),
+	DEFINE_FIELD(CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER),
+	DEFINE_FIELD(CMonsterMaker, m_fActive, FIELD_BOOLEAN),
+	DEFINE_FIELD(CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN),
 };
 
 
@@ -136,14 +135,8 @@ void CMonsterMaker::Spawn()
 		SetThink(&CMonsterMaker::MakerThink);
 	}
 
-	if (m_cNumMonsters == 1)
-	{
-		m_fFadeChildren = false;
-	}
-	else
-	{
-		m_fFadeChildren = true;
-	}
+	// Unnecesary for now.
+	m_fFadeChildren = false;
 
 	m_flGround = 0;
 }
@@ -183,10 +176,14 @@ void CMonsterMaker::MakeMonster()
 	mins.z = m_flGround;
 
 	CBaseEntity* pList[2];
-	int count = UTIL_EntitiesInBox(pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER);
+
+	int count = UTIL_EntitiesInBox(pList, 2, mins, maxs, FL_CLIENT);
+
 	if (0 != count)
 	{
-		// don't build a stack of monsters!
+		// Insecure: Since the monster makers are usually placed with
+		// the env_warpball entity, it kills whatever it is occupying
+		// the space, but still, don't spawn if the player is on its place.
 		return;
 	}
 

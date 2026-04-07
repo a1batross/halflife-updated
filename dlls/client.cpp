@@ -176,7 +176,7 @@ void ClientKill(edict_t* pEntity)
 
 	// have the player kill themself
 	pev->health = 0;
-	pl->Killed(pev, GIB_NEVER);
+	pl->Killed(pev, GIB_ALWAYS);
 
 	//	pev->modelindex = g_ulModelIndexPlayer;
 	//	pev->frags -= 2;		// extra penalty
@@ -584,6 +584,10 @@ void ClientCommand(edict_t* pEntity)
 		if (player->IsObserver())
 			player->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) != 0);
 	}
+	else if (FStrEq(pcmd, "cl_version"))
+	{
+		ClientPrint(pev, HUD_PRINTNOTIFY, "Half-Life: Insecure\nVersion 1.5\nTEST BUILD\n");
+	}
 	else if (g_pGameRules->ClientCommand(player, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
@@ -900,8 +904,10 @@ void ClientPrecache()
 	PRECACHE_SOUND("player/geiger2.wav");
 	PRECACHE_SOUND("player/geiger1.wav");
 
-	if (giPrecacheGrunt)
-		UTIL_PrecacheOther("monster_human_grunt");
+	if (giPrecacheSci)
+		UTIL_PrecacheOther("monster_scientist");
+	if (giPrecacheBa)
+		UTIL_PrecacheOther("monster_barney");
 }
 
 /*

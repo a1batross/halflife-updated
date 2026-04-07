@@ -19,6 +19,7 @@
 #include "monsters.h"
 #include "weapons.h"
 #include "effects.h"
+#include "skill.h"
 
 #define SF_WAITFORTRIGGER (0x04 | 0x40) // UNDONE: Fix!
 #define SF_NOWRECKAGE 0x08
@@ -123,8 +124,8 @@ void CApache::Spawn()
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage = DAMAGE_AIM;
+
 	pev->health = gSkillData.apacheHealth;
-	pev->max_health = pev->health;
 
 	m_flFieldOfView = -0.707; // 270 degrees
 
@@ -430,6 +431,7 @@ void CApache::CrashTouch(CBaseEntity* pOther)
 	if (pOther->pev->solid == SOLID_BSP)
 	{
 		SetTouch(NULL);
+		pev->deadflag = DEAD_DEAD;
 		m_flNextRocket = gpGlobals->time;
 		pev->nextthink = gpGlobals->time;
 	}
@@ -722,7 +724,7 @@ void CApache::Flight()
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.2, 0, 110);
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
@@ -856,7 +858,7 @@ bool CApache::FireGun()
 	if (DotProduct(vecGun, vecTarget) > 0.98)
 	{
 #if 1
-		FireBullets(1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1);
+		FireBullets(1, posGun, vecGun, VECTOR_CONE_2DEGREES, 8192, BULLET_MONSTER_12MM, 1);
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.3);
 #else
 		static float flNext;
@@ -917,29 +919,22 @@ bool CApache::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	if (pevInflictor->owner == edict())
 		return false;
 
-	if ((bitsDamageType & DMG_BLAST) != 0)
-	{
-		flDamage *= 2;
-	}
-
-	/*
-	if ( (bitsDamageType & DMG_BULLET) && flDamage > 50)
-	{
-		// clip bullet damage at 50
-		flDamage = 50;
-	}
-	*/
-
 	// ALERT( at_console, "%.0f\n", flDamage );
 	const bool result = CBaseEntity::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 
+	if (bitsDamageType == DMG_ENERGYBEAM)
+	{
+		// instant kill from overcharged gauss cannon.
+		flDamage = flDamage + 100;
+	}
+
 	//Are we damaged at all?
-	if (pev->health < pev->max_health)
+	if (pev->health < 200)
 	{
 		//Took some damage.
 		SetConditions(bits_COND_LIGHT_DAMAGE);
 
-		if (pev->health < (pev->max_health / 2))
+		if (pev->health < 100)
 		{
 			//Seriously damaged now.
 			SetConditions(bits_COND_HEAVY_DAMAGE);
@@ -966,13 +961,13 @@ void CApache::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir,
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
 
 	// ignore blades
-	if (ptr->iHitgroup == 6 && (bitsDamageType & (DMG_ENERGYBEAM | DMG_BULLET | DMG_CLUB)) != 0)
+	if (ptr->iHitgroup == 6 && (bitsDamageType & (DMG_BULLET | DMG_CLUB)) != 0)
 		return;
 
 	// hit hard, hits cockpit, hits engines
 	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2)
 	{
-		// ALERT( at_console, "%.0f\n", flDamage );
+		//ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage(pevAttacker, this, flDamage, bitsDamageType);
 		m_iDoSmokePuff = 3 + (flDamage / 5.0);
 	}
@@ -1095,4 +1090,76 @@ void CApacheHVR::AccelerateThink()
 	pev->angles = UTIL_VecToAngles(pev->velocity);
 
 	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+//=========================================================
+// CCineApache
+//=========================================================
+
+class CCineApache : public CBaseMonster
+{
+public:
+	void Spawn();
+	void Precache();
+	int  Classify();
+	bool TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+};
+LINK_ENTITY_TO_CLASS(monster_cine_apache, CCineApache);
+
+//=========================================================
+// Classify - indicates this monster's place in the 
+// relationship table.
+//=========================================================
+int	CCineApache::Classify()
+{
+	return	CLASS_NONE;
+}
+
+//=========================================================
+// Spawn
+//=========================================================
+void CCineApache::Spawn()
+{
+	Precache();
+
+	SET_MODEL(ENT(pev), "models/cine_apache.mdl");
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = DONT_BLEED;
+	pev->health = 100;
+	pev->takedamage = DAMAGE_NO;
+	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
+	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_MonsterState = MONSTERSTATE_NONE;
+
+	MonsterInit();
+}
+
+//=========================================================
+// Precache - precaches all resources this monster needs
+//=========================================================
+void CCineApache::Precache()
+{
+	PRECACHE_MODEL("models/cine_apache.mdl");
+}
+
+//=========================================================
+// Override all damage
+//=========================================================
+bool CCineApache::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+{
+	pev->health = pev->max_health / 2; // always trigger the 50% damage aitrigger
+
+	if (flDamage > 0)
+	{
+		SetConditions(bits_COND_LIGHT_DAMAGE);
+	}
+
+	if (flDamage >= 20)
+	{
+		SetConditions(bits_COND_HEAVY_DAMAGE);
+	}
+	return true;
 }

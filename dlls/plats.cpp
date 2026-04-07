@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -50,10 +50,10 @@ public:
 };
 
 TYPEDESCRIPTION CBasePlatTrain::m_SaveData[] =
-	{
-		DEFINE_FIELD(CBasePlatTrain, m_bMoveSnd, FIELD_CHARACTER),
-		DEFINE_FIELD(CBasePlatTrain, m_bStopSnd, FIELD_CHARACTER),
-		DEFINE_FIELD(CBasePlatTrain, m_volume, FIELD_FLOAT),
+{
+	DEFINE_FIELD(CBasePlatTrain, m_bMoveSnd, FIELD_CHARACTER),
+	DEFINE_FIELD(CBasePlatTrain, m_bStopSnd, FIELD_CHARACTER),
+	DEFINE_FIELD(CBasePlatTrain, m_volume, FIELD_FLOAT),
 };
 
 IMPLEMENT_SAVERESTORE(CBasePlatTrain, CBaseToggle);
@@ -541,9 +541,9 @@ public:
 };
 LINK_ENTITY_TO_CLASS(func_platrot, CFuncPlatRot);
 TYPEDESCRIPTION CFuncPlatRot::m_SaveData[] =
-	{
-		DEFINE_FIELD(CFuncPlatRot, m_end, FIELD_VECTOR),
-		DEFINE_FIELD(CFuncPlatRot, m_start, FIELD_VECTOR),
+{
+	DEFINE_FIELD(CFuncPlatRot, m_end, FIELD_VECTOR),
+	DEFINE_FIELD(CFuncPlatRot, m_start, FIELD_VECTOR),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncPlatRot, CFuncPlat);
@@ -660,10 +660,10 @@ public:
 
 LINK_ENTITY_TO_CLASS(func_train, CFuncTrain);
 TYPEDESCRIPTION CFuncTrain::m_SaveData[] =
-	{
-		DEFINE_FIELD(CFuncTrain, m_sounds, FIELD_INTEGER),
-		DEFINE_FIELD(CFuncTrain, m_pevCurrentTarget, FIELD_EVARS),
-		DEFINE_FIELD(CFuncTrain, m_activated, FIELD_BOOLEAN),
+{
+	DEFINE_FIELD(CFuncTrain, m_sounds, FIELD_INTEGER),
+	DEFINE_FIELD(CFuncTrain, m_pevCurrentTarget, FIELD_EVARS),
+	DEFINE_FIELD(CFuncTrain, m_activated, FIELD_BOOLEAN),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncTrain, CBasePlatTrain);
@@ -895,15 +895,15 @@ void CFuncTrain::Precache()
 		break;
 
 	case 1:
-		PRECACHE_SOUND ("plats/train2.wav");
-		PRECACHE_SOUND ("plats/train1.wav");
+		PRECACHE_SOUND("plats/train2.wav");
+		PRECACHE_SOUND("plats/train1.wav");
 		pev->noise = MAKE_STRING("plats/train2.wav");
 		pev->noise1 = MAKE_STRING("plats/train1.wav");
 		break;
 
 	case 2:
-		PRECACHE_SOUND ("plats/platmove1.wav");
-		PRECACHE_SOUND ("plats/platstop1.wav");
+		PRECACHE_SOUND("plats/platmove1.wav");
+		PRECACHE_SOUND("plats/platstop1.wav");
 		pev->noise = MAKE_STRING("plats/platstop1.wav");
 		pev->noise1 = MAKE_STRING("plats/platmove1.wav");
 		break;
@@ -945,19 +945,19 @@ void CFuncTrain::OverrideReset()
 // ---------------------------------------------------------------------
 
 TYPEDESCRIPTION CFuncTrackTrain::m_SaveData[] =
-	{
-		DEFINE_FIELD(CFuncTrackTrain, m_ppath, FIELD_CLASSPTR),
-		DEFINE_FIELD(CFuncTrackTrain, m_length, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_height, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_speed, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_dir, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_startSpeed, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_controlMins, FIELD_VECTOR),
-		DEFINE_FIELD(CFuncTrackTrain, m_controlMaxs, FIELD_VECTOR),
-		DEFINE_FIELD(CFuncTrackTrain, m_sounds, FIELD_INTEGER),
-		DEFINE_FIELD(CFuncTrackTrain, m_flVolume, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_flBank, FIELD_FLOAT),
-		DEFINE_FIELD(CFuncTrackTrain, m_oldSpeed, FIELD_FLOAT),
+{
+	DEFINE_FIELD(CFuncTrackTrain, m_ppath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTrackTrain, m_length, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_height, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_speed, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_dir, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_startSpeed, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_controlMins, FIELD_VECTOR),
+	DEFINE_FIELD(CFuncTrackTrain, m_controlMaxs, FIELD_VECTOR),
+	DEFINE_FIELD(CFuncTrackTrain, m_sounds, FIELD_INTEGER),
+	DEFINE_FIELD(CFuncTrackTrain, m_flVolume, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_flBank, FIELD_FLOAT),
+	DEFINE_FIELD(CFuncTrackTrain, m_oldSpeed, FIELD_FLOAT),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncTrackTrain, CBaseEntity);
@@ -1108,7 +1108,7 @@ void CFuncTrackTrain::StopSound()
 	if (m_soundPlaying && !FStringNull(pev->noise))
 	{
 		unsigned short us_encode;
-		unsigned short us_sound = ((unsigned short)(m_sounds)&0x0007) << 12;
+		unsigned short us_sound = ((unsigned short)(m_sounds) & 0x0007) << 12;
 
 		us_encode = us_sound;
 
@@ -1150,13 +1150,13 @@ void CFuncTrackTrain::UpdateSound()
 		// update pitch
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise), m_flVolume, ATTN_NORM, SND_CHANGE_PITCH, (int) flpitch);
 */
-		// volume 0.0 - 1.0 - 6 bits
-		// m_sounds 3 bits
-		// flpitch = 6 bits
-		// 15 bits total
+// volume 0.0 - 1.0 - 6 bits
+// m_sounds 3 bits
+// flpitch = 6 bits
+// 15 bits total
 
 		unsigned short us_encode;
-		unsigned short us_sound = ((unsigned short)(m_sounds)&0x0007) << 12;
+		unsigned short us_sound = ((unsigned short)(m_sounds) & 0x0007) << 12;
 		unsigned short us_pitch = ((unsigned short)(flpitch / 10.0) & 0x003f) << 6;
 		unsigned short us_volume = ((unsigned short)(m_flVolume * 40.0) & 0x003f);
 
@@ -1306,7 +1306,7 @@ void CFuncTrackTrain::Next()
 void CFuncTrackTrain::DeadEnd()
 {
 	// Fire the dead-end target if there is one
-	CPathTrack *pTrack, *pNext;
+	CPathTrack* pTrack, * pNext;
 
 	pTrack = m_ppath;
 
@@ -1693,16 +1693,16 @@ public:
 LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange);
 
 TYPEDESCRIPTION CFuncTrackChange::m_SaveData[] =
-	{
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTop, FIELD_CLASSPTR),
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottom, FIELD_CLASSPTR),
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_train, FIELD_CLASSPTR),
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTopName, FIELD_STRING),
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottomName, FIELD_STRING),
-		DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trainName, FIELD_STRING),
-		DEFINE_FIELD(CFuncTrackChange, m_code, FIELD_INTEGER),
-		DEFINE_FIELD(CFuncTrackChange, m_targetState, FIELD_INTEGER),
-		DEFINE_FIELD(CFuncTrackChange, m_use, FIELD_BOOLEAN),
+{
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTop, FIELD_CLASSPTR),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottom, FIELD_CLASSPTR),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_train, FIELD_CLASSPTR),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTopName, FIELD_STRING),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottomName, FIELD_STRING),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trainName, FIELD_STRING),
+	DEFINE_FIELD(CFuncTrackChange, m_code, FIELD_INTEGER),
+	DEFINE_FIELD(CFuncTrackChange, m_targetState, FIELD_INTEGER),
+	DEFINE_FIELD(CFuncTrackChange, m_use, FIELD_BOOLEAN),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncTrackChange, CFuncPlatRot);
@@ -1750,7 +1750,7 @@ void CFuncTrackChange::Touch(CBaseEntity* pOther)
 {
 #if 0
 	TRAIN_CODE code;
-	entvars_t *pevToucher = pOther->pev;
+	entvars_t* pevToucher = pOther->pev;
 #endif
 }
 
@@ -2051,7 +2051,7 @@ LINK_ENTITY_TO_CLASS(func_trackautochange, CFuncTrackAuto);
 // Auto track change
 void CFuncTrackAuto::UpdateAutoTargets(int toggleState)
 {
-	CPathTrack *pTarget, *pNextTarget;
+	CPathTrack* pTarget, * pNextTarget;
 
 	if (!m_trackTop || !m_trackBottom)
 		return;
@@ -2161,8 +2161,8 @@ private:
 LINK_ENTITY_TO_CLASS(func_guntarget, CGunTarget);
 
 TYPEDESCRIPTION CGunTarget::m_SaveData[] =
-	{
-		DEFINE_FIELD(CGunTarget, m_on, FIELD_BOOLEAN),
+{
+	DEFINE_FIELD(CGunTarget, m_on, FIELD_BOOLEAN),
 };
 
 IMPLEMENT_SAVERESTORE(CGunTarget, CBaseMonster);
@@ -2300,7 +2300,7 @@ void CGunTarget::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 	}
 	else
 	{
-		pev->takedamage = DAMAGE_AIM;
+		pev->takedamage = DAMAGE_YES;
 		m_hTargetEnt = GetNextTarget();
 		if (m_hTargetEnt == NULL)
 			return;

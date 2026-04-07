@@ -78,6 +78,15 @@ bool CGlock::Deploy()
 	return DefaultDeploy("models/v_9mmhandgun.mdl", "models/p_9mmhandgun.mdl", GLOCK_DRAW, "onehanded");
 }
 
+void CGlock::Holster()
+{
+	m_fInReload = false; // cancel any reload in progress.
+
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+
+	SendWeaponAnim(GLOCK_HOLSTER);
+}
+
 void CGlock::SecondaryAttack()
 {
 	GlockFire(0.1, 0.2, false);

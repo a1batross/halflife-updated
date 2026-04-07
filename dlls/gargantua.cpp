@@ -597,7 +597,7 @@ void CGargantua::FlameUpdate()
 				streaks = true;
 				UTIL_DecalTrace(&trace, DECAL_SMALLSCORCH1 + RANDOM_LONG(0, 2));
 			}
-			// RadiusDamage( trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN );
+
 			FlameDamage(vecStart, trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN);
 
 			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
@@ -682,7 +682,15 @@ void CGargantua::FlameDamage(Vector vecStart, Vector vecEnd, entvars_t* pevInfli
 				}
 				else
 				{
-					pEntity->TakeDamage(pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType);
+					if (FClassnameIs(pEntity->pev, "monster_alien_slave_empowered"))
+					{
+						// Deal continuous damage to the empowered slave.
+						pEntity->TakeDamage(pevInflictor, pevAttacker, 300, bitsDamageType);
+					}
+					else
+					{
+						pEntity->TakeDamage(pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType);
+					}
 				}
 			}
 		}
@@ -726,7 +734,7 @@ void CGargantua::PrescheduleThink()
 //=========================================================
 int CGargantua::Classify()
 {
-	return CLASS_ALIEN_MONSTER;
+	return CLASS_ALIEN_MILITARY;
 }
 
 //=========================================================
@@ -1045,7 +1053,18 @@ CBaseEntity* CGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage
 
 		if (iDamage > 0)
 		{
-			pEntity->TakeDamage(pev, pev, iDamage, iDmgType);
+			// To resolve the loop for the Gargantua battle against the
+			// empowered aslaves, in which the Gargantua manages to kill
+			// the aslave but the ally continues to revive him.
+			// So kill the aslave in one hit.
+			if (FClassnameIs(pEntity->pev, "monster_alien_slave_empowered"))
+			{
+				pEntity->TakeDamage(pev, pev, 500, iDmgType);
+			}
+			else
+			{
+				pEntity->TakeDamage(pev, pev, iDamage, iDmgType);
+			}
 		}
 
 		return pEntity;

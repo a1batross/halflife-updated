@@ -22,7 +22,7 @@
 constexpr int MAX_PLAYERS = 32;
 #define MAX_WEAPONS 64 // ???
 
-#define MAX_WEAPON_SLOTS 5 // hud item selection slots
+#define MAX_WEAPON_SLOTS 6 // hud item selection slots
 #define MAX_ITEM_TYPES 6   // hud item selection slots
 
 #define MAX_ITEMS 5 // hard coded item types
@@ -58,7 +58,17 @@ enum WeaponId
 	WEAPON_TRIPMINE,
 	WEAPON_SATCHEL,
 	WEAPON_SNARK,
+	//OPFOR WEAPONS
+	WEAPON_KNIFE,
+	WEAPON_EAGLE,
+	WEAPON_M249,
+	WEAPON_SNIPERRIFLE,
+	WEAPON_PENGUIN,
 
+	WEAPON_C4 = 27,
+	WEAPON_KEYCARD = 28,
+	WEAPON_REDCARD = 29,
+	WEAPON_FLASHLIGHT = 30,
 	WEAPON_SUIT = 31
 };
 

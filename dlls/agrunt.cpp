@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -125,67 +125,67 @@ public:
 LINK_ENTITY_TO_CLASS(monster_alien_grunt, CAGrunt);
 
 TYPEDESCRIPTION CAGrunt::m_SaveData[] =
-	{
-		DEFINE_FIELD(CAGrunt, m_fCanHornetAttack, FIELD_BOOLEAN),
-		DEFINE_FIELD(CAGrunt, m_flNextHornetAttackCheck, FIELD_TIME),
-		DEFINE_FIELD(CAGrunt, m_flNextPainTime, FIELD_TIME),
-		DEFINE_FIELD(CAGrunt, m_flNextSpeakTime, FIELD_TIME),
-		DEFINE_FIELD(CAGrunt, m_flNextWordTime, FIELD_TIME),
-		DEFINE_FIELD(CAGrunt, m_iLastWord, FIELD_INTEGER),
+{
+	DEFINE_FIELD(CAGrunt, m_fCanHornetAttack, FIELD_BOOLEAN),
+	DEFINE_FIELD(CAGrunt, m_flNextHornetAttackCheck, FIELD_TIME),
+	DEFINE_FIELD(CAGrunt, m_flNextPainTime, FIELD_TIME),
+	DEFINE_FIELD(CAGrunt, m_flNextSpeakTime, FIELD_TIME),
+	DEFINE_FIELD(CAGrunt, m_flNextWordTime, FIELD_TIME),
+	DEFINE_FIELD(CAGrunt, m_iLastWord, FIELD_INTEGER),
 };
 
 IMPLEMENT_SAVERESTORE(CAGrunt, CSquadMonster);
 
 const char* CAGrunt::pAttackHitSounds[] =
-	{
-		"zombie/claw_strike1.wav",
-		"zombie/claw_strike2.wav",
-		"zombie/claw_strike3.wav",
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
 };
 
 const char* CAGrunt::pAttackMissSounds[] =
-	{
-		"zombie/claw_miss1.wav",
-		"zombie/claw_miss2.wav",
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
 };
 
 const char* CAGrunt::pAttackSounds[] =
-	{
-		"agrunt/ag_attack1.wav",
-		"agrunt/ag_attack2.wav",
-		"agrunt/ag_attack3.wav",
+{
+	"agrunt/ag_attack1.wav",
+	"agrunt/ag_attack2.wav",
+	"agrunt/ag_attack3.wav",
 };
 
 const char* CAGrunt::pDieSounds[] =
-	{
-		"agrunt/ag_die1.wav",
-		"agrunt/ag_die4.wav",
-		"agrunt/ag_die5.wav",
+{
+	"agrunt/ag_die1.wav",
+	"agrunt/ag_die4.wav",
+	"agrunt/ag_die5.wav",
 };
 
 const char* CAGrunt::pPainSounds[] =
-	{
-		"agrunt/ag_pain1.wav",
-		"agrunt/ag_pain2.wav",
-		"agrunt/ag_pain3.wav",
-		"agrunt/ag_pain4.wav",
-		"agrunt/ag_pain5.wav",
+{
+	"agrunt/ag_pain1.wav",
+	"agrunt/ag_pain2.wav",
+	"agrunt/ag_pain3.wav",
+	"agrunt/ag_pain4.wav",
+	"agrunt/ag_pain5.wav",
 };
 
 const char* CAGrunt::pIdleSounds[] =
-	{
-		"agrunt/ag_idle1.wav",
-		"agrunt/ag_idle2.wav",
-		"agrunt/ag_idle3.wav",
-		"agrunt/ag_idle4.wav",
+{
+	"agrunt/ag_idle1.wav",
+	"agrunt/ag_idle2.wav",
+	"agrunt/ag_idle3.wav",
+	"agrunt/ag_idle4.wav",
 };
 
 const char* CAGrunt::pAlertSounds[] =
-	{
-		"agrunt/ag_alert1.wav",
-		"agrunt/ag_alert3.wav",
-		"agrunt/ag_alert4.wav",
-		"agrunt/ag_alert5.wav",
+{
+	"agrunt/ag_alert1.wav",
+	"agrunt/ag_alert3.wav",
+	"agrunt/ag_alert4.wav",
+	"agrunt/ag_alert5.wav",
 };
 
 //=========================================================
@@ -208,9 +208,9 @@ int CAGrunt::IRelationship(CBaseEntity* pTarget)
 int CAGrunt::ISoundMask()
 {
 	return bits_SOUND_WORLD |
-		   bits_SOUND_COMBAT |
-		   bits_SOUND_PLAYER |
-		   bits_SOUND_DANGER;
+		bits_SOUND_COMBAT |
+		bits_SOUND_PLAYER |
+		bits_SOUND_DANGER;
 }
 
 //=========================================================
@@ -496,7 +496,7 @@ void CAGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 	case AGRUNT_AE_LEFT_FOOT:
 		switch (RANDOM_LONG(0, 1))
 		{
-		// left foot
+			// left foot
 		case 0:
 			EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "player/pl_ladder2.wav", 1, ATTN_NORM, 0, 70);
 			break;
@@ -642,42 +642,42 @@ void CAGrunt::Precache()
 // Fail Schedule
 //=========================================================
 Task_t tlAGruntFail[] =
-	{
-		{TASK_STOP_MOVING, 0},
-		{TASK_SET_ACTIVITY, (float)ACT_IDLE},
-		{TASK_WAIT, (float)2},
-		{TASK_WAIT_PVS, (float)0},
+{
+	{TASK_STOP_MOVING, 0},
+	{TASK_SET_ACTIVITY, (float)ACT_IDLE},
+	{TASK_WAIT, (float)2},
+	{TASK_WAIT_PVS, (float)0},
 };
 
 Schedule_t slAGruntFail[] =
-	{
-		{tlAGruntFail,
-			ARRAYSIZE(tlAGruntFail),
-			bits_COND_CAN_RANGE_ATTACK1 |
-				bits_COND_CAN_MELEE_ATTACK1,
-			0,
-			"AGrunt Fail"},
+{
+	{tlAGruntFail,
+		ARRAYSIZE(tlAGruntFail),
+		bits_COND_CAN_RANGE_ATTACK1 |
+			bits_COND_CAN_MELEE_ATTACK1,
+		0,
+		"AGrunt Fail"},
 };
 
 //=========================================================
 // Combat Fail Schedule
 //=========================================================
 Task_t tlAGruntCombatFail[] =
-	{
-		{TASK_STOP_MOVING, 0},
-		{TASK_SET_ACTIVITY, (float)ACT_IDLE},
-		{TASK_WAIT_FACE_ENEMY, (float)2},
-		{TASK_WAIT_PVS, (float)0},
+{
+	{TASK_STOP_MOVING, 0},
+	{TASK_SET_ACTIVITY, (float)ACT_IDLE},
+	{TASK_WAIT_FACE_ENEMY, (float)2},
+	{TASK_WAIT_PVS, (float)0},
 };
 
 Schedule_t slAGruntCombatFail[] =
-	{
-		{tlAGruntCombatFail,
-			ARRAYSIZE(tlAGruntCombatFail),
-			bits_COND_CAN_RANGE_ATTACK1 |
-				bits_COND_CAN_MELEE_ATTACK1,
-			0,
-			"AGrunt Combat Fail"},
+{
+	{tlAGruntCombatFail,
+		ARRAYSIZE(tlAGruntCombatFail),
+		bits_COND_CAN_RANGE_ATTACK1 |
+			bits_COND_CAN_MELEE_ATTACK1,
+		0,
+		"AGrunt Combat Fail"},
 };
 
 //=========================================================
@@ -686,87 +686,87 @@ Schedule_t slAGruntCombatFail[] =
 // Should we look around in this schedule?
 //=========================================================
 Task_t tlAGruntStandoff[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_SET_ACTIVITY, (float)ACT_IDLE},
-		{TASK_WAIT_FACE_ENEMY, (float)2},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_SET_ACTIVITY, (float)ACT_IDLE},
+	{TASK_WAIT_FACE_ENEMY, (float)2},
 };
 
 Schedule_t slAGruntStandoff[] =
-	{
-		{tlAGruntStandoff,
-			ARRAYSIZE(tlAGruntStandoff),
-			bits_COND_CAN_RANGE_ATTACK1 |
-				bits_COND_CAN_MELEE_ATTACK1 |
-				bits_COND_SEE_ENEMY |
-				bits_COND_NEW_ENEMY |
-				bits_COND_HEAR_SOUND,
+{
+	{tlAGruntStandoff,
+		ARRAYSIZE(tlAGruntStandoff),
+		bits_COND_CAN_RANGE_ATTACK1 |
+			bits_COND_CAN_MELEE_ATTACK1 |
+			bits_COND_SEE_ENEMY |
+			bits_COND_NEW_ENEMY |
+			bits_COND_HEAR_SOUND,
 
-			bits_SOUND_DANGER,
-			"Agrunt Standoff"}};
+		bits_SOUND_DANGER,
+		"Agrunt Standoff"} };
 
 //=========================================================
 // Suppress
 //=========================================================
 Task_t tlAGruntSuppressHornet[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_RANGE_ATTACK1, (float)0},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_RANGE_ATTACK1, (float)0},
 };
 
 Schedule_t slAGruntSuppress[] =
+{
 	{
-		{
-			tlAGruntSuppressHornet,
-			ARRAYSIZE(tlAGruntSuppressHornet),
-			0,
-			0,
-			"AGrunt Suppress Hornet",
-		},
+		tlAGruntSuppressHornet,
+		ARRAYSIZE(tlAGruntSuppressHornet),
+		0,
+		0,
+		"AGrunt Suppress Hornet",
+	},
 };
 
 //=========================================================
 // primary range attacks
 //=========================================================
 Task_t tlAGruntRangeAttack1[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_FACE_ENEMY, (float)0},
-		{TASK_RANGE_ATTACK1, (float)0},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_FACE_ENEMY, (float)0},
+	{TASK_RANGE_ATTACK1, (float)0},
 };
 
 Schedule_t slAGruntRangeAttack1[] =
-	{
-		{tlAGruntRangeAttack1,
-			ARRAYSIZE(tlAGruntRangeAttack1),
-			bits_COND_NEW_ENEMY |
-				bits_COND_ENEMY_DEAD |
-				bits_COND_HEAVY_DAMAGE,
+{
+	{tlAGruntRangeAttack1,
+		ARRAYSIZE(tlAGruntRangeAttack1),
+		bits_COND_NEW_ENEMY |
+			bits_COND_ENEMY_DEAD |
+			bits_COND_HEAVY_DAMAGE,
 
-			0,
-			"AGrunt Range Attack1"},
+		0,
+		"AGrunt Range Attack1"},
 };
 
 
 Task_t tlAGruntHiddenRangeAttack1[] =
-	{
-		{TASK_SET_FAIL_SCHEDULE, (float)SCHED_STANDOFF},
-		{TASK_AGRUNT_SETUP_HIDE_ATTACK, 0},
-		{TASK_STOP_MOVING, 0},
-		{TASK_FACE_IDEAL, 0},
-		{TASK_RANGE_ATTACK1_NOTURN, (float)0},
+{
+	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_STANDOFF},
+	{TASK_AGRUNT_SETUP_HIDE_ATTACK, 0},
+	{TASK_STOP_MOVING, 0},
+	{TASK_FACE_IDEAL, 0},
+	{TASK_RANGE_ATTACK1_NOTURN, (float)0},
 };
 
 Schedule_t slAGruntHiddenRangeAttack[] =
-	{
-		{tlAGruntHiddenRangeAttack1,
-			ARRAYSIZE(tlAGruntHiddenRangeAttack1),
-			bits_COND_NEW_ENEMY |
-				bits_COND_HEAVY_DAMAGE |
-				bits_COND_HEAR_SOUND,
+{
+	{tlAGruntHiddenRangeAttack1,
+		ARRAYSIZE(tlAGruntHiddenRangeAttack1),
+		bits_COND_NEW_ENEMY |
+			bits_COND_HEAVY_DAMAGE |
+			bits_COND_HEAR_SOUND,
 
-			bits_SOUND_DANGER,
-			"AGrunt Hidden Range Attack1"},
+		bits_SOUND_DANGER,
+		"AGrunt Hidden Range Attack1"},
 };
 
 //=========================================================
@@ -774,95 +774,95 @@ Schedule_t slAGruntHiddenRangeAttack[] =
 // cover!
 //=========================================================
 Task_t tlAGruntTakeCoverFromEnemy[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_WAIT, (float)0.2},
-		{TASK_FIND_COVER_FROM_ENEMY, (float)0},
-		{TASK_RUN_PATH, (float)0},
-		{TASK_WAIT_FOR_MOVEMENT, (float)0},
-		{TASK_REMEMBER, (float)bits_MEMORY_INCOVER},
-		{TASK_FACE_ENEMY, (float)0},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_WAIT, (float)0.2},
+	{TASK_FIND_COVER_FROM_ENEMY, (float)0},
+	{TASK_RUN_PATH, (float)0},
+	{TASK_WAIT_FOR_MOVEMENT, (float)0},
+	{TASK_REMEMBER, (float)bits_MEMORY_INCOVER},
+	{TASK_FACE_ENEMY, (float)0},
 };
 
 Schedule_t slAGruntTakeCoverFromEnemy[] =
-	{
-		{tlAGruntTakeCoverFromEnemy,
-			ARRAYSIZE(tlAGruntTakeCoverFromEnemy),
-			bits_COND_NEW_ENEMY,
-			0,
-			"AGruntTakeCoverFromEnemy"},
+{
+	{tlAGruntTakeCoverFromEnemy,
+		ARRAYSIZE(tlAGruntTakeCoverFromEnemy),
+		bits_COND_NEW_ENEMY,
+		0,
+		"AGruntTakeCoverFromEnemy"},
 };
 
 //=========================================================
 // Victory dance!
 //=========================================================
 Task_t tlAGruntVictoryDance[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_SET_FAIL_SCHEDULE, (float)SCHED_AGRUNT_THREAT_DISPLAY},
-		{TASK_WAIT, (float)0.2},
-		{TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE, (float)0},
-		{TASK_WALK_PATH, (float)0},
-		{TASK_WAIT_FOR_MOVEMENT, (float)0},
-		{TASK_FACE_ENEMY, (float)0},
-		{TASK_PLAY_SEQUENCE, (float)ACT_CROUCH},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_STAND},
-		{TASK_PLAY_SEQUENCE, (float)ACT_THREAT_DISPLAY},
-		{TASK_PLAY_SEQUENCE, (float)ACT_CROUCH},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
-		{TASK_PLAY_SEQUENCE, (float)ACT_STAND},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_AGRUNT_THREAT_DISPLAY},
+	{TASK_WAIT, (float)0.2},
+	{TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE, (float)0},
+	{TASK_WALK_PATH, (float)0},
+	{TASK_WAIT_FOR_MOVEMENT, (float)0},
+	{TASK_FACE_ENEMY, (float)0},
+	{TASK_PLAY_SEQUENCE, (float)ACT_CROUCH},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_STAND},
+	{TASK_PLAY_SEQUENCE, (float)ACT_THREAT_DISPLAY},
+	{TASK_PLAY_SEQUENCE, (float)ACT_CROUCH},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_VICTORY_DANCE},
+	{TASK_PLAY_SEQUENCE, (float)ACT_STAND},
 };
 
 Schedule_t slAGruntVictoryDance[] =
-	{
-		{tlAGruntVictoryDance,
-			ARRAYSIZE(tlAGruntVictoryDance),
-			bits_COND_NEW_ENEMY |
-				bits_COND_LIGHT_DAMAGE |
-				bits_COND_HEAVY_DAMAGE,
-			0,
-			"AGruntVictoryDance"},
+{
+	{tlAGruntVictoryDance,
+		ARRAYSIZE(tlAGruntVictoryDance),
+		bits_COND_NEW_ENEMY |
+			bits_COND_LIGHT_DAMAGE |
+			bits_COND_HEAVY_DAMAGE,
+		0,
+		"AGruntVictoryDance"},
 };
 
 //=========================================================
 //=========================================================
 Task_t tlAGruntThreatDisplay[] =
-	{
-		{TASK_STOP_MOVING, (float)0},
-		{TASK_FACE_ENEMY, (float)0},
-		{TASK_PLAY_SEQUENCE, (float)ACT_THREAT_DISPLAY},
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_FACE_ENEMY, (float)0},
+	{TASK_PLAY_SEQUENCE, (float)ACT_THREAT_DISPLAY},
 };
 
 Schedule_t slAGruntThreatDisplay[] =
-	{
-		{tlAGruntThreatDisplay,
-			ARRAYSIZE(tlAGruntThreatDisplay),
-			bits_COND_NEW_ENEMY |
-				bits_COND_LIGHT_DAMAGE |
-				bits_COND_HEAVY_DAMAGE,
+{
+	{tlAGruntThreatDisplay,
+		ARRAYSIZE(tlAGruntThreatDisplay),
+		bits_COND_NEW_ENEMY |
+			bits_COND_LIGHT_DAMAGE |
+			bits_COND_HEAVY_DAMAGE,
 
-			bits_SOUND_PLAYER |
-				bits_SOUND_COMBAT |
-				bits_SOUND_WORLD,
-			"AGruntThreatDisplay"},
+		bits_SOUND_PLAYER |
+			bits_SOUND_COMBAT |
+			bits_SOUND_WORLD,
+		"AGruntThreatDisplay"},
 };
 
-DEFINE_CUSTOM_SCHEDULES(CAGrunt){
+DEFINE_CUSTOM_SCHEDULES(CAGrunt) {
 	slAGruntFail,
-	slAGruntCombatFail,
-	slAGruntStandoff,
-	slAGruntSuppress,
-	slAGruntRangeAttack1,
-	slAGruntHiddenRangeAttack,
-	slAGruntTakeCoverFromEnemy,
-	slAGruntVictoryDance,
-	slAGruntThreatDisplay,
+		slAGruntCombatFail,
+		slAGruntStandoff,
+		slAGruntSuppress,
+		slAGruntRangeAttack1,
+		slAGruntHiddenRangeAttack,
+		slAGruntTakeCoverFromEnemy,
+		slAGruntVictoryDance,
+		slAGruntThreatDisplay,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES(CAGrunt, CSquadMonster);
@@ -1146,19 +1146,19 @@ Schedule_t* CAGrunt::GetScheduleOfType(int Type)
 
 	case SCHED_FAIL:
 		// no fail schedule specified, so pick a good generic one.
+	{
+		if (m_hEnemy != NULL)
 		{
-			if (m_hEnemy != NULL)
-			{
-				// I have an enemy
-				// !!!LATER - what if this enemy is really far away and i'm chasing him?
-				// this schedule will make me stop, face his last known position for 2
-				// seconds, and then try to move again
-				return &slAGruntCombatFail[0];
-			}
-
-			return &slAGruntFail[0];
+			// I have an enemy
+			// !!!LATER - what if this enemy is really far away and i'm chasing him?
+			// this schedule will make me stop, face his last known position for 2
+			// seconds, and then try to move again
+			return &slAGruntCombatFail[0];
 		}
-		break;
+
+		return &slAGruntFail[0];
+	}
+	break;
 	}
 
 	return CSquadMonster::GetScheduleOfType(Type);

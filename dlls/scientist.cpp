@@ -87,6 +87,7 @@ public:
 	Activity GetStoppedActivity() override;
 	int ISoundMask() override;
 	void DeclineFollowing() override;
+	void DeclineFollowingAlt() override;
 
 	float CoverRadius() override { return 1200; } // Need more room for cover because scientists want to get far away!
 	bool DisregardEnemy(CBaseEntity* pEnemy) { return !pEnemy->IsAlive() || (gpGlobals->time - m_fearTime) > 15; }
@@ -411,6 +412,12 @@ void CScientist::DeclineFollowing()
 	Talk(10);
 	m_hTalkTarget = m_hEnemy;
 	PlaySentence("SC_POK", 2, VOL_NORM, ATTN_NORM);
+}
+
+
+void CScientist::DeclineFollowingAlt()
+{
+	m_hTalkTarget = m_hEnemy;
 }
 
 
@@ -1257,8 +1264,8 @@ void CSittingScientist::Spawn()
 
 	UTIL_SetSize(pev, Vector(-14, -14, 0), Vector(14, 14, 36));
 
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
+	pev->solid = SOLID_BBOX;
+	pev->movetype = MOVETYPE_NONE;
 	pev->effects = 0;
 	pev->health = 50;
 
@@ -1284,7 +1291,7 @@ void CSittingScientist::Spawn()
 	SetThink(&CSittingScientist::SittingThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	DROP_TO_FLOOR(ENT(pev));
+	//DROP_TO_FLOOR(ENT(pev));
 }
 
 void CSittingScientist::Precache()
@@ -1470,4 +1477,43 @@ bool CSittingScientist::FIdleSpeak()
 	// never spoke
 	CTalkMonster::g_talkWaitTime = 0;
 	return false;
+}
+
+//
+// SCIENTIST COMMANDER
+//
+class CScientistCommander : public CScientist
+{
+public:
+	void Spawn() override;
+	void Precache() override;
+	void SetYawSpeed() override;
+	int Classify() override;
+};
+LINK_ENTITY_TO_CLASS(monster_scientist_commander, CScientistCommander);
+
+void CScientistCommander::Spawn()
+{
+	CScientist::Spawn();
+	SET_MODEL(ENT(pev), "models/commander.mdl");
+	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	pev->health = gSkillData.scientistHealth;
+	m_voicePitch = 100;
+}
+
+void CScientistCommander::Precache()
+{
+	PRECACHE_MODEL("models/commander.mdl");
+	CScientist::Precache();
+}
+
+
+void CScientistCommander::SetYawSpeed()
+{
+	pev->yaw_speed = 120;
+}
+
+int CScientistCommander::Classify()
+{
+	return CLASS_HUMAN_PASSIVE;
 }

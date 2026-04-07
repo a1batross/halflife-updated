@@ -82,9 +82,9 @@ extern client_sprite_t* GetSpriteList(client_sprite_t* pList, const char* psz, i
 
 extern cvar_t* sensitivity;
 cvar_t* cl_lw = NULL;
-cvar_t* cl_rollangle = nullptr;
-cvar_t* cl_rollspeed = nullptr;
-cvar_t* cl_bobtilt = nullptr;
+
+cvar_t* cl_rollangle;
+cvar_t* cl_rollspeed;
 
 void ShutdownInput();
 
@@ -331,9 +331,6 @@ void CHud::Init()
 	m_pCvarStealMouse = CVAR_CREATE("hud_capturemouse", "1", FCVAR_ARCHIVE);
 	m_pCvarDraw = CVAR_CREATE("hud_draw", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer("cl_lw");
-	cl_rollangle = CVAR_CREATE("cl_rollangle", "2.0", FCVAR_ARCHIVE);
-	cl_rollspeed = CVAR_CREATE("cl_rollspeed", "200", FCVAR_ARCHIVE);
-	cl_bobtilt = CVAR_CREATE("cl_bobtilt", "0", FCVAR_ARCHIVE);
 
 	m_pSpriteList = NULL;
 
@@ -361,6 +358,9 @@ void CHud::Init()
 	m_Train.Init();
 	m_Battery.Init();
 	m_Flash.Init();
+	m_Keycard.Init();
+	m_Redcard.Init();
+	m_C4.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
 	m_DeathNotice.Init();
@@ -426,8 +426,12 @@ void CHud::VidInit()
 
 	if (ScreenWidth < 640)
 		m_iRes = 320;
+	else if (ScreenWidth < 1280)
+		m_iRes = 640;	
+	else if (ScreenWidth <= 2560)
+		m_iRes = 1280;
 	else
-		m_iRes = 640;
+		m_iRes = 2560;
 
 	// Only load this once
 	if (!m_pSpriteList)
@@ -504,6 +508,9 @@ void CHud::VidInit()
 	m_Train.VidInit();
 	m_Battery.VidInit();
 	m_Flash.VidInit();
+	m_Keycard.VidInit();
+	m_Redcard.VidInit();
+	m_C4.VidInit();
 	m_Message.VidInit();
 	m_StatusBar.VidInit();
 	m_DeathNotice.VidInit();

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -28,15 +28,15 @@
 // Save/Restore
 //=========================================================
 TYPEDESCRIPTION CSquadMonster::m_SaveData[] =
-	{
-		DEFINE_FIELD(CSquadMonster, m_hSquadLeader, FIELD_EHANDLE),
-		DEFINE_ARRAY(CSquadMonster, m_hSquadMember, FIELD_EHANDLE, MAX_SQUAD_MEMBERS - 1),
+{
+	DEFINE_FIELD(CSquadMonster, m_hSquadLeader, FIELD_EHANDLE),
+	DEFINE_ARRAY(CSquadMonster, m_hSquadMember, FIELD_EHANDLE, MAX_SQUAD_MEMBERS - 1),
 
-		// DEFINE_FIELD( CSquadMonster, m_afSquadSlots, FIELD_INTEGER ), // these need to be reset after transitions!
-		DEFINE_FIELD(CSquadMonster, m_fEnemyEluded, FIELD_BOOLEAN),
-		DEFINE_FIELD(CSquadMonster, m_flLastEnemySightTime, FIELD_TIME),
+	// DEFINE_FIELD( CSquadMonster, m_afSquadSlots, FIELD_INTEGER ), // these need to be reset after transitions!
+	DEFINE_FIELD(CSquadMonster, m_fEnemyEluded, FIELD_BOOLEAN),
+	DEFINE_FIELD(CSquadMonster, m_flLastEnemySightTime, FIELD_TIME),
 
-		DEFINE_FIELD(CSquadMonster, m_iMySlot, FIELD_INTEGER),
+	DEFINE_FIELD(CSquadMonster, m_iMySlot, FIELD_INTEGER),
 
 
 };
@@ -436,8 +436,8 @@ void CSquadMonster::StartMonster()
 
 		if (IsLeader() && FClassnameIs(pev, "monster_human_grunt"))
 		{
-			SetBodygroup(1, 1); // UNDONE: truly ugly hack
-			pev->skin = 0;
+			SetBodygroup(1, 2); // UNDONE: truly ugly hack
+			pev->skin = RANDOM_LONG(0, 1);
 		}
 	}
 }

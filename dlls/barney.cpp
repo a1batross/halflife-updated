@@ -35,6 +35,7 @@
 #define BARNEY_AE_DRAW (2)
 #define BARNEY_AE_SHOOT (3)
 #define BARNEY_AE_HOLSTER (4)
+#define BARNEY_AE_RELOAD (5)
 
 #define BARNEY_BODY_GUNHOLSTERED 0
 #define BARNEY_BODY_GUNDRAWN 1
@@ -47,7 +48,7 @@ public:
 	void Precache() override;
 	void SetYawSpeed() override;
 	int ISoundMask() override;
-	void BarneyFirePistol();
+	void Glock();
 	void AlertSound() override;
 	int Classify() override;
 	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
@@ -57,8 +58,10 @@ public:
 	int ObjectCaps() override { return CTalkMonster::ObjectCaps() | FCAP_IMPULSE_USE; }
 	bool TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 	bool CheckRangeAttack1(float flDot, float flDist) override;
+	void CheckAmmo() override;
 
 	void DeclineFollowing() override;
+	void DeclineFollowingAlt() override;
 
 	// Override these to set behavior
 	Schedule_t* GetScheduleOfType(int Type) override;
@@ -81,6 +84,7 @@ public:
 	float m_painTime;
 	float m_checkAttackTime;
 	bool m_lastAttackCheck;
+	int m_cClipSize;
 
 	// UNDONE: What is this for?  It isn't used?
 	float m_flPlayerDamage; // how much pain has the player inflicted on me?
@@ -90,6 +94,15 @@ public:
 
 LINK_ENTITY_TO_CLASS(monster_barney, CBarney);
 
+//=========================================================
+// monster-specific schedule types
+//=========================================================
+enum
+{
+	SCHED_BARNEY_COVER_AND_RELOAD,
+	SCHED_BARNEY_LOW_AMMO_RELOAD = 2,
+};
+
 TYPEDESCRIPTION CBarney::m_SaveData[] =
 	{
 		DEFINE_FIELD(CBarney, m_fGunDrawn, FIELD_BOOLEAN),
@@ -97,6 +110,7 @@ TYPEDESCRIPTION CBarney::m_SaveData[] =
 		DEFINE_FIELD(CBarney, m_checkAttackTime, FIELD_TIME),
 		DEFINE_FIELD(CBarney, m_lastAttackCheck, FIELD_BOOLEAN),
 		DEFINE_FIELD(CBarney, m_flPlayerDamage, FIELD_FLOAT),
+		DEFINE_FIELD(CBarney, m_cClipSize, FIELD_INTEGER),
 };
 
 IMPLEMENT_SAVERESTORE(CBarney, CTalkMonster);
@@ -164,6 +178,44 @@ Schedule_t slBaFaceTarget[] =
 			"FaceTarget"},
 };
 
+Task_t tlBaHideReload[] =
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_SET_FAIL_SCHEDULE, (float)SCHED_RELOAD},
+	{TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY, (float)0},
+	{TASK_RUN_PATH, (float)0},
+	{TASK_WAIT_FOR_MOVEMENT, (float)0},
+	{TASK_REMEMBER, (float)bits_MEMORY_INCOVER},
+	{TASK_FACE_ENEMY, (float)0},
+	{TASK_PLAY_SEQUENCE, (float)ACT_RELOAD},
+};
+
+Task_t tlBaLowAmmoReload[] =
+{
+	{TASK_STOP_MOVING, (float)0},
+	{TASK_PLAY_SEQUENCE, (float)ACT_RELOAD},
+};
+
+Schedule_t slBaHideReload[] =
+{
+	{tlBaHideReload,
+		ARRAYSIZE(tlBaHideReload),
+		bits_COND_HEAVY_DAMAGE |
+			bits_COND_HEAR_SOUND,
+
+		bits_SOUND_DANGER,
+		"BarneyHideReload"} };
+
+Schedule_t slBaLowAmmoReload[] =
+{
+	{tlBaLowAmmoReload,
+		ARRAYSIZE(tlBaLowAmmoReload),
+		bits_COND_HEAVY_DAMAGE |
+			bits_COND_HEAR_SOUND,
+
+		bits_SOUND_DANGER,
+		"BarneyReload"} };
+
 
 Task_t tlIdleBaStand[] =
 	{
@@ -200,6 +252,8 @@ DEFINE_CUSTOM_SCHEDULES(CBarney){
 	slBarneyEnemyDraw,
 	slBaFaceTarget,
 	slIdleBaStand,
+	slBaHideReload,
+	slBaLowAmmoReload,
 };
 
 
@@ -207,7 +261,18 @@ IMPLEMENT_CUSTOM_SCHEDULES(CBarney, CTalkMonster);
 
 void CBarney::StartTask(Task_t* pTask)
 {
-	CTalkMonster::StartTask(pTask);
+	m_iTaskStatus = TASKSTATUS_RUNNING;
+
+	switch (pTask->iTask)
+	{
+	case TASK_RELOAD:
+		m_IdealActivity = ACT_RELOAD;
+		break;
+
+	default:
+		CTalkMonster::StartTask(pTask);
+	break;
+	}
 }
 
 void CBarney::RunTask(Task_t* pTask)
@@ -324,12 +389,19 @@ bool CBarney::CheckRangeAttack1(float flDot, float flDist)
 	return false;
 }
 
+void CBarney::CheckAmmo()
+{
+	if (m_cAmmoLoaded <= 0)
+	{
+		SetConditions(bits_COND_NO_AMMO_LOADED);
+	}
+}
 
 //=========================================================
-// BarneyFirePistol - shoots one round from the pistol at
+// Glock - shoots one round from the pistol at
 // the enemy barney is facing.
 //=========================================================
-void CBarney::BarneyFirePistol()
+void CBarney::Glock()
 {
 	Vector vecShootOrigin;
 
@@ -341,7 +413,7 @@ void CBarney::BarneyFirePistol()
 	SetBlending(0, angDir.x);
 	pev->effects = EF_MUZZLEFLASH;
 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_MONSTER_9MM);
 
 	int pitchShift = RANDOM_LONG(0, 20);
 
@@ -354,8 +426,11 @@ void CBarney::BarneyFirePistol()
 
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 
-	// UNDONE: Reload?
-	m_cAmmoLoaded--; // take away a bullet!
+	//ALERT(at_console, "%d", m_cAmmoLoaded);
+
+	// Don't take ammo if he's on a scripted sequence
+	if (m_MonsterState != MONSTERSTATE_SCRIPT)
+		m_cAmmoLoaded--;
 }
 
 //=========================================================
@@ -369,7 +444,7 @@ void CBarney::HandleAnimEvent(MonsterEvent_t* pEvent)
 	switch (pEvent->event)
 	{
 	case BARNEY_AE_SHOOT:
-		BarneyFirePistol();
+		Glock();
 		break;
 
 	case BARNEY_AE_DRAW:
@@ -382,6 +457,12 @@ void CBarney::HandleAnimEvent(MonsterEvent_t* pEvent)
 		// change bodygroup to replace gun in holster
 		pev->body = BARNEY_BODY_GUNHOLSTERED;
 		m_fGunDrawn = false;
+		break;
+
+	case BARNEY_AE_RELOAD:
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM);
+		m_cAmmoLoaded = m_cClipSize;
+		ClearConditions(bits_COND_NO_AMMO_LOADED);
 		break;
 
 	default:
@@ -408,7 +489,10 @@ void CBarney::Spawn()
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	pev->body = 0; // gun in holster
+
 	m_fGunDrawn = false;
+	m_cClipSize = 18; // one bullet than player's glock.
+	m_cAmmoLoaded = m_cClipSize;
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
@@ -433,6 +517,8 @@ void CBarney::Precache()
 	PRECACHE_SOUND("barney/ba_die1.wav");
 	PRECACHE_SOUND("barney/ba_die2.wav");
 	PRECACHE_SOUND("barney/ba_die3.wav");
+
+	PRECACHE_SOUND("hgrunt/gr_reload1.wav");
 
 	// every new barney must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -660,6 +746,17 @@ Schedule_t* CBarney::GetScheduleOfType(int Type)
 	case SCHED_TARGET_CHASE:
 		return slBaFollow;
 
+
+	case SCHED_BARNEY_LOW_AMMO_RELOAD:
+	{
+		return &slBaLowAmmoReload[0];
+	}
+
+	case SCHED_BARNEY_COVER_AND_RELOAD:
+	{
+		return &slBaHideReload[0];
+	}
+
 	case SCHED_IDLE_STAND:
 		// call base class default so that scientist will talk
 		// when standing during idle
@@ -718,12 +815,36 @@ Schedule_t* CBarney::GetSchedule()
 		if (!m_fGunDrawn)
 			return GetScheduleOfType(SCHED_ARM_WEAPON);
 
+		if (HasConditions(bits_COND_NO_AMMO_LOADED))
+		{
+			// i'm with the player so he should cover me while i'm reloading
+			if (IsFollowing())
+				return GetScheduleOfType(SCHED_BARNEY_LOW_AMMO_RELOAD);
+			else
+				// well shit i'm on my own, run to cover and reload
+				return GetScheduleOfType(SCHED_BARNEY_COVER_AND_RELOAD);
+		}
+
 		if (HasConditions(bits_COND_HEAVY_DAMAGE))
 			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 	}
 	break;
 
 	case MONSTERSTATE_ALERT:
+	{
+		// this is for the reload activity to work when is following the player.
+		if (m_cAmmoLoaded <= 10)
+		{
+			// reload if i'm on low ammo.
+			return GetScheduleOfType(SCHED_BARNEY_LOW_AMMO_RELOAD);
+		}
+		if (HasConditions(bits_COND_CLIENT_PUSH))
+		{
+			return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
+		}
+		return GetScheduleOfType(SCHED_TARGET_FACE);
+	}
+	break;
 	case MONSTERSTATE_IDLE:
 		if (HasConditions(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE))
 		{
@@ -775,6 +896,12 @@ void CBarney::DeclineFollowing()
 }
 
 
+void CBarney::DeclineFollowingAlt()
+{
+
+}
+
+
 
 
 
@@ -797,6 +924,7 @@ public:
 	bool KeyValue(KeyValueData* pkvd) override;
 
 	int m_iPose; // which sequence to display	-- temporary, don't need to save
+	int m_iType;// Armored or Unarmored?
 	static const char* m_szPoses[3];
 };
 
@@ -807,6 +935,11 @@ bool CDeadBarney::KeyValue(KeyValueData* pkvd)
 	if (FStrEq(pkvd->szKeyName, "pose"))
 	{
 		m_iPose = atoi(pkvd->szValue);
+		return true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "type"))
+	{
+		m_iType = atoi(pkvd->szValue);
 		return true;
 	}
 
@@ -821,11 +954,18 @@ LINK_ENTITY_TO_CLASS(monster_barney_dead, CDeadBarney);
 void CDeadBarney::Spawn()
 {
 	PRECACHE_MODEL("models/barney.mdl");
-	SET_MODEL(ENT(pev), "models/barney.mdl");
+	PRECACHE_MODEL("models/dead_barney.mdl");
+
+	if (m_iType == 1)
+		SET_MODEL(ENT(pev), "models/dead_barney.mdl");
+	else
+		SET_MODEL(ENT(pev), "models/barney.mdl");
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;
 	pev->sequence = 0;
+	pev->body = 2;
+
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	pev->sequence = LookupSequence(m_szPoses[m_iPose]);

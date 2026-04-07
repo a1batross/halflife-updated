@@ -67,7 +67,6 @@ HLDLL_OBJS = \
 	$(HLDLL_OBJ_DIR)/hassassin.o \
 	$(HLDLL_OBJ_DIR)/headcrab.o \
 	$(HLDLL_OBJ_DIR)/healthkit.o \
-	$(HLDLL_OBJ_DIR)/hgrunt.o \
 	$(HLDLL_OBJ_DIR)/hornet.o \
 	$(HLDLL_OBJ_DIR)/hornetgun.o \
 	$(HLDLL_OBJ_DIR)/houndeye.o \
@@ -121,7 +120,33 @@ HLDLL_OBJS = \
 	$(HLDLL_OBJ_DIR)/weapons_shared.o \
 	$(HLDLL_OBJ_DIR)/world.o \
 	$(HLDLL_OBJ_DIR)/xen.o \
-	$(HLDLL_OBJ_DIR)/zombie.o
+	$(HLDLL_OBJ_DIR)/zombie.o \
+	$(HLDLL_OBJ_DIR)/zombie_soldier.o \
+	$(HLDLL_OBJ_DIR)/zombie_barney.o \
+	$(HLDLL_OBJ_DIR)/zombie_worker.o \
+	$(HLDLL_OBJ_DIR)/zombie_hev.o \
+	$(HLDLL_OBJ_DIR)/gonome.o \
+	$(HLDLL_OBJ_DIR)/m249.o \
+	$(HLDLL_OBJ_DIR)/eagle.o \
+	$(HLDLL_OBJ_DIR)/knife.o \
+	$(HLDLL_OBJ_DIR)/sniperrifle.o \
+	$(HLDLL_OBJ_DIR)/hgrunt_new.o \
+	$(HLDLL_OBJ_DIR)/saw_gunner.o \
+	$(HLDLL_OBJ_DIR)/massassin.o \
+	$(HLDLL_OBJ_DIR)/twin_gonarch.o \
+	$(HLDLL_OBJ_DIR)/baby_gargantua.o \
+	$(HLDLL_OBJ_DIR)/houndeye_explosive.o \
+	$(HLDLL_OBJ_DIR)/islave_empowered.o \
+	$(HLDLL_OBJ_DIR)/agrunt_premature.o \
+	$(HLDLL_OBJ_DIR)/deadhev.o \
+	$(HLDLL_OBJ_DIR)/otis.o \
+	$(HLDLL_OBJ_DIR)/construction.o \
+	$(HLDLL_OBJ_DIR)/controller_exterminator.o \
+	$(HLDLL_OBJ_DIR)/gauss_new.o \
+	$(HLDLL_OBJ_DIR)/hornet_new.o \
+	$(HLDLL_OBJ_DIR)/agrunt_poisonous.o \
+	$(HLDLL_OBJ_DIR)/hornetgun_new.o \
+	$(HLDLL_OBJ_DIR)/penguingrenade.o
 
 PM_OBJS = \
 	$(PM_OBJ_DIR)/pm_shared.o \
@@ -149,7 +174,7 @@ dirs:
 	-mkdir -p $(COMMON_OBJ_DIR)
 
 hl.$(SHLIBEXT): $(HLDLL_OBJS) $(PM_OBJS) $(GAME_SHARED_OBJS) $(PUBLIC_OBJS) $(COMMON_OBJS)
-	$(CPLUS) $(LDFLAGS) $(CPP_LIB) $(SHLIBLDFLAGS) -o $(BUILD_DIR)/$@ $(HLDLL_OBJS) $(PM_OBJS) $(GAME_SHARED_OBJS) $(PUBLIC_OBJS) $(COMMON_OBJS)
+	$(CPLUS) $(LDFLAGS) $(SHLIBLDFLAGS) -o $(BUILD_DIR)/$@ $(HLDLL_OBJS) $(PM_OBJS) $(GAME_SHARED_OBJS) $(PUBLIC_OBJS) $(COMMON_OBJS) $(CPP_LIB)
 	./gendbg.sh $(BUILD_DIR)/hl.$(SHLIBEXT)
 
 $(HLDLL_OBJ_DIR)/%.o : $(HLDLL_SRC_DIR)/%.cpp

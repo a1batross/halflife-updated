@@ -130,9 +130,10 @@ void CHandGrenade::WeaponIdle()
 		else
 			angThrow.x = -10 + angThrow.x * ((90 + 10) / 90.0);
 
-		float flVel = (90 - angThrow.x) * 4;
-		if (flVel > 500)
-			flVel = 500;
+		static float flMultiplier = 6.5f;
+		float flVel = (90 - angThrow.x) * flMultiplier;
+		if (flVel > 1000)
+			flVel = 1000;
 
 		UTIL_MakeVectors(angThrow);
 
@@ -217,3 +218,34 @@ void CHandGrenade::WeaponIdle()
 		SendWeaponAnim(iAnim);
 	}
 }
+
+
+// shitty ass hack to fix hand grenade crates
+// since weapons can't respawn and toggle the
+// grenade model inside the crates but for some
+// reason it only works for ammo items.
+
+class CHandGrenadeAmmo : public CBasePlayerAmmo
+{
+	void Spawn() override
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_grenade.mdl");
+		CBasePlayerAmmo::Spawn();
+	}
+	void Precache() override
+	{
+		PRECACHE_MODEL("models/w_grenade.mdl");
+		PRECACHE_SOUND("items/9mmclip1.wav");
+	}
+	bool AddAmmo(CBaseEntity* pOther) override
+	{
+		if (pOther->GiveAmmo(HANDGRENADE_DEFAULT_GIVE, "Hand Grenade", HANDGRENADE_MAX_CARRY) != -1)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+			return true;
+		}
+		return false;
+	}
+};
+LINK_ENTITY_TO_CLASS(ammo_handgrenade, CHandGrenadeAmmo);

@@ -190,7 +190,7 @@ bool CCrowbar::Swing(bool fFirst)
 		if (fFirst)
 		{
 			// miss
-			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -222,21 +222,13 @@ bool CCrowbar::Swing(bool fFirst)
 
 		ClearMultiDamage();
 
-		if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || g_pGameRules->IsMultiplayer())
-		{
-			// first swing does full damage
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgCrowbar, gpGlobals->v_forward, &tr, DMG_CLUB);
-		}
-		else
-		{
-			// subsequent swings do half
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.plrDmgCrowbar / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
-		}
+		pEntity->TraceAttack(m_pPlayer->pev, 100, gpGlobals->v_forward, &tr, DMG_CLUB);
+
 		ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
 #endif
 
-		m_flNextPrimaryAttack = GetNextAttackDelay(0.25);
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
 
 #ifndef CLIENT_DLL
 		// play thwack, smack, or dong sound

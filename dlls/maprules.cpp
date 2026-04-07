@@ -766,6 +766,10 @@ void CGameCounterSet::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 class CGamePlayerEquip : public CRulePointEntity
 {
 public:
+	virtual bool	Save(CSave& save);
+	virtual bool	Restore(CRestore& restore);
+	static	TYPEDESCRIPTION m_SaveData[];
+
 	bool KeyValue(KeyValueData* pkvd) override;
 	void Touch(CBaseEntity* pOther) override;
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
@@ -780,6 +784,14 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);
+
+TYPEDESCRIPTION CGamePlayerEquip::m_SaveData[] =
+{
+	DEFINE_FIELD(CGamePlayerEquip, m_weaponNames, FIELD_STRING),
+	DEFINE_FIELD(CGamePlayerEquip, m_weaponCount, FIELD_INTEGER),
+};
+
+IMPLEMENT_SAVERESTORE(CGamePlayerEquip, CRulePointEntity);
 
 
 bool CGamePlayerEquip::KeyValue(KeyValueData* pkvd)

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -24,6 +24,8 @@
 #include "skill.h"
 #include "items.h"
 #include "UserMessages.h"
+
+#define AMMO_RESPAWN_TIME 4
 
 //=========================================================
 //=========================================================
@@ -122,6 +124,7 @@ float CHalfLifeRules::FlPlayerFallDamage(CBasePlayer* pPlayer)
 //=========================================================
 void CHalfLifeRules::PlayerSpawn(CBasePlayer* pPlayer)
 {
+	pPlayer->SetSuit(true);
 }
 
 //=========================================================
@@ -189,7 +192,7 @@ void CHalfLifeRules::PlayerGotWeapon(CBasePlayer* pPlayer, CBasePlayerItem* pWea
 //=========================================================
 float CHalfLifeRules::FlWeaponRespawnTime(CBasePlayerItem* pWeapon)
 {
-	return -1;
+	return gpGlobals->time + AMMO_RESPAWN_TIME;
 }
 
 //=========================================================
@@ -217,7 +220,7 @@ Vector CHalfLifeRules::VecWeaponRespawnSpot(CBasePlayerItem* pWeapon)
 //=========================================================
 int CHalfLifeRules::WeaponShouldRespawn(CBasePlayerItem* pWeapon)
 {
-	return GR_WEAPON_RESPAWN_NO;
+	return GR_WEAPON_RESPAWN_YES;
 }
 
 //=========================================================
@@ -282,7 +285,7 @@ int CHalfLifeRules::AmmoShouldRespawn(CBasePlayerAmmo* pAmmo)
 //=========================================================
 float CHalfLifeRules::FlAmmoRespawnTime(CBasePlayerAmmo* pAmmo)
 {
-	return -1;
+	return gpGlobals->time + AMMO_RESPAWN_TIME;
 }
 
 //=========================================================

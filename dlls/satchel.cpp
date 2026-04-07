@@ -313,7 +313,7 @@ void CSatchel::Holster()
 
 
 
-void CSatchel::PrimaryAttack()
+/*void CSatchel::PrimaryAttack()
 {
 	switch (m_chargeReady)
 	{
@@ -364,8 +364,43 @@ void CSatchel::SecondaryAttack()
 	{
 		Throw();
 	}
+}*/
+
+void CSatchel::PrimaryAttack()
+{
+	if (m_chargeReady != 2)
+	{
+		Throw();
+	}
 }
 
+void CSatchel::SecondaryAttack()
+{
+	if (m_chargeReady == 1)
+	{
+		SendWeaponAnim(SATCHEL_RADIO_FIRE);
+
+		edict_t* pPlayer = m_pPlayer->edict();
+
+		CBaseEntity* pSatchel = NULL;
+
+		while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, m_pPlayer->pev->origin, 4096)) != NULL)
+		{
+			if (FClassnameIs(pSatchel->pev, "monster_satchel"))
+			{
+				if (pSatchel->pev->owner == pPlayer)
+				{
+					pSatchel->Use(m_pPlayer, m_pPlayer, USE_ON, 0);
+					m_chargeReady = 2;
+				}
+			}
+		}
+		m_chargeReady = 2;
+		m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+	}
+}
 
 void CSatchel::Throw()
 {

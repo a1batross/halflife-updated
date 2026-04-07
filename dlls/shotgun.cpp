@@ -90,6 +90,12 @@ bool CShotgun::Deploy()
 	return DefaultDeploy("models/v_shotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun");
 }
 
+void CShotgun::Holster()
+{
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
+	SendWeaponAnim(SHOTGUN_HOLSTER);
+}
+
 void CShotgun::PrimaryAttack()
 {
 	// don't fire underwater
@@ -122,6 +128,9 @@ void CShotgun::PrimaryAttack()
 
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
+
+	// player "shoot" animation
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
@@ -384,3 +393,28 @@ class CShotgunAmmo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS(ammo_buckshot, CShotgunAmmo);
+
+class CShellAmmo : public CBasePlayerAmmo
+{
+	void Spawn() override
+	{
+		Precache();
+		SET_MODEL(ENT(pev), "models/w_shotshell.mdl");
+		CBasePlayerAmmo::Spawn();
+	}
+	void Precache() override
+	{
+		PRECACHE_MODEL("models/w_shotshell.mdl");
+		PRECACHE_SOUND("items/9mmclip1.wav");
+	}
+	bool AddAmmo(CBaseEntity* pOther) override
+	{
+		if (pOther->GiveAmmo(3, "buckshot", BUCKSHOT_MAX_CARRY) != -1)
+		{
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+			return true;
+		}
+		return false;
+	}
+};
+LINK_ENTITY_TO_CLASS(ammo_shotshell, CShellAmmo);

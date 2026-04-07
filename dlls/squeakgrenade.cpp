@@ -90,6 +90,7 @@ int CSqueakGrenade::Classify()
 		case CLASS_PLAYER:
 		case CLASS_HUMAN_PASSIVE:
 		case CLASS_HUMAN_MILITARY:
+		case CLASS_HUMAN_ASSASSIN:
 			m_iMyClass = 0;
 			return CLASS_ALIEN_MILITARY; // barney's get mad, grunts get mad at it
 		}
@@ -452,6 +453,9 @@ bool CSqueak::GetItemInfo(ItemInfo* p)
 
 bool CSqueak::Deploy()
 {
+	// reset thrown state so animation don't repeat
+	m_fJustThrown = false;
+
 	// play hunt sound
 	float flRndSound = RANDOM_FLOAT(0, 1);
 

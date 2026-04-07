@@ -22,5 +22,7 @@ public:
 	CBaseEntity* Respawn() override;
 	void EXPORT ItemTouch(CBaseEntity* pOther);
 	void EXPORT Materialize();
+	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
 	virtual bool MyTouch(CBasePlayer* pPlayer) { return false; }
 };

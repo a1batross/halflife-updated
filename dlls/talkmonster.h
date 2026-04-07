@@ -145,6 +145,7 @@ public:
 	void StopFollowing(bool clearSchedule) override;
 	void StartFollowing(CBaseEntity* pLeader);
 	virtual void DeclineFollowing() {}
+	virtual void DeclineFollowingAlt() {}
 	void LimitFollowers(CBaseEntity* pPlayer, int maxFollowers);
 
 	void EXPORT FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
